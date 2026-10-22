@@ -1,0 +1,10 @@
+{
+  "name": "kenya-travel-concierge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Premium responsive website for Kenya Travel Concierge",
+  "scripts": {
+    "build": "python3 scripts/build.py",
+    "check": "python3 scripts/check.py"
+  }
+}

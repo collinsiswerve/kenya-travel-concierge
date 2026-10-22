@@ -1,0 +1,122 @@
+[
+  {
+    "slug": "airport-meet-and-greet",
+    "title": "Airport Meet & Greet",
+    "group": "travel",
+    "eyebrow": "A warm welcome. A seamless arrival.",
+    "summary": "From arrival coordination to your onward transfer, feel looked after from the moment you land.",
+    "description": "A considered arrival experience for returning Kenyans, international guests, corporate travellers, visiting artists, and first-time visitors. We coordinate the details around your flight so you can arrive with peace of mind.",
+    "image": "airport-source.jpeg",
+    "crop": [355, 58, 360, 268],
+    "includes": ["Real-time flight monitoring and delay tracking", "In-terminal reception at international arrivals, subject to airport access arrangements", "Baggage collection coordination and luggage assistance", "Escort and handover to your pre-booked hotel transfer or onward transport", "Kenyan cultural welcomes and performance coordination on request", "24/7 on-call arrival coordination"],
+    "note": "Share your flight details, passenger numbers, and destination so we can confirm the appropriate arrival arrangements."
+  },
+  {
+    "slug": "car-hire-and-chauffeur",
+    "title": "Car Hire & Chauffeur",
+    "group": "travel",
+    "eyebrow": "Travel in comfort. Arrive with confidence.",
+    "summary": "Dependable ground transport, from everyday journeys to executive chauffeur arrangements.",
+    "description": "Punctual, professional transport for personal, family, and corporate travel. Whether you need an airport pickup, a day of meetings, or an intercity journey, we coordinate transport around your plans.",
+    "image": "chauffeur-source.jpeg",
+    "crop": [328, 62, 315, 275],
+    "includes": ["Standard vehicles for everyday travel", "Luxury SUVs for VIP logistics", "Airport transfers and hotel pickups", "Executive chauffeur coordination", "Intercity journeys across Kenya", "Flexible scheduling for personal, family, and corporate trips"],
+    "note": "Tell us your route, dates, passenger numbers, and vehicle preferences for a tailored quotation."
+  },
+  {
+    "slug": "vip-and-executive-concierge",
+    "title": "VIP & Executive Concierge",
+    "group": "travel",
+    "eyebrow": "Exceptional service. Absolute discretion.",
+    "summary": "Thoughtful itinerary management, private transfers, and dedicated support for demanding schedules.",
+    "description": "A discreet point of contact for executives and VIP guests who value privacy and attentive coordination. We bring your itinerary, accommodation, transport, and personal requests together, with dedicated support around your visit.",
+    "image": "executive-source.jpeg",
+    "crop": [337, 58, 307, 122],
+    "includes": ["Custom itinerary planning and executive meeting scheduling", "Luxury hotel coordination and exclusive stay reservations", "Dedicated chauffeur arrangements, airport meet and greet, and private transfers", "Discreet handling of personal information and requests", "Dining reservations and venue access coordination, subject to availability", "Executive assistance, personal shopping, and bespoke experiences", "24/7 dedicated concierge support by arrangement"],
+    "note": "Let us know your itinerary, service preferences, and any privacy requirements before your visit."
+  },
+  {
+    "slug": "lifestyle-concierge",
+    "title": "Lifestyle Concierge",
+    "group": "living",
+    "eyebrow": "The little details. Beautifully handled.",
+    "summary": "Personal assistance and everyday coordination that give you back your most valuable asset: time.",
+    "description": "From a thoughtful gift to a beautifully coordinated occasion, our lifestyle support is shaped around you. Ideal for busy professionals, diaspora families, expatriates, and anyone who needs a reliable local hand.",
+    "image": "lifestyle-source.jpeg",
+    "crop": [322, 62, 323, 420],
+    "includes": ["Private event coordination, including venues, catering, decor, MCs, and entertainment", "Dining reservations and appointment scheduling", "Household courier and parcel coordination", "Personal grocery and essential shopping", "Gift sourcing, bespoke packaging, and doorstep delivery", "Family support, school errands, and pharmacy collections", "Floral arrangements and special-order deliveries"],
+    "note": "Share the occasion, timing, and preferences. We will help shape the details around your request."
+  },
+  {
+    "slug": "relocation-and-settling-in",
+    "title": "Relocation & Settling In",
+    "group": "living",
+    "eyebrow": "Moving to Kenya, made effortless.",
+    "summary": "Practical guidance and local coordination to help you feel at home in Kenya.",
+    "description": "Moving is more than a journey. It is finding your neighbourhood, setting up your home, and getting everyday life working. We coordinate the practical steps, with local support before arrival and as you settle in.",
+    "image": "relocation-source.jpeg",
+    "crop": [378, 58, 280, 233],
+    "includes": ["Documentation guidance and local administrative support", "Home searches, neighbourhood sourcing, and school selection support", "Airport pickups, transport coordination, and shopping errands", "Utility connections and furnishing setup", "Domestic staff sourcing and vetting", "New and previously owned vehicle import assistance", "Introductions to vetted local legal and financial professionals"],
+    "note": "Tell us when you are moving, who is relocating, and what a comfortable start in Kenya looks like for you."
+  },
+  {
+    "slug": "consultation-and-planning",
+    "title": "Consultation & Planning",
+    "group": "living",
+    "eyebrow": "Great journeys begin with great planning.",
+    "summary": "A knowledgeable local link for navigating travel, relocation, and day-to-day life in Kenya.",
+    "description": "Get clarity before you take the next step. Our one-to-one consultations help you understand your options and put a practical plan in place, with introductions to appropriate local professionals where specialist advice is needed.",
+    "image": "planning-source.jpeg",
+    "crop": [298, 58, 346, 267],
+    "includes": ["Personalised planning for relocation and travel", "Guidance on navigating local administrative processes", "Coordination around property investment enquiries", "Business liaison, local networking, and on-ground representation", "One-to-one sessions on Kenyan systems, culture, and logistics", "Introductions to lawyers, commissioners for oaths, and financial experts"],
+    "note": "Professional legal, tax, financial, and regulated advice is provided by the relevant appointed specialists."
+  },
+  {
+    "slug": "property-care-and-business-oversight",
+    "title": "Property Care & Business Oversight",
+    "group": "support",
+    "eyebrow": "A local presence for what matters to you.",
+    "summary": "Practical stewardship of homes, commercial assets, and business operations while you are away.",
+    "description": "Stay connected to your property and operations in Kenya, wherever you are. We coordinate checks, household preparation, maintenance, and reporting for owners and investors who need reliable support on the ground.",
+    "image": "property-source.jpeg",
+    "crop": [321, 58, 326, 106],
+    "includes": ["Caretaker, domestic staff, and labour sourcing, vetting, and payroll coordination", "Pre-arrival home preparation, inventory audits, and deep-cleaning oversight", "Maintenance logistics and contractor repair coordination", "Expense tracking, invoice audits, and payroll disbursement coordination", "Utility bill verification and meter checks", "Coordination of tax filings and statutory returns with appointed professionals", "Scheduled home, office, and warehouse inspections with photo or video walkthroughs", "On-site security monitoring coordination and emergency call-out support"],
+    "note": "We agree reporting frequency, authorised spending, and the extent of representation before the service begins."
+  },
+  {
+    "slug": "construction-oversight",
+    "title": "Construction Oversight",
+    "group": "support",
+    "eyebrow": "Your vision. A closer eye on the details.",
+    "summary": "Independent on-ground project monitoring that keeps remote owners informed about their build.",
+    "description": "Follow the progress of your construction project with a local point of contact. Our impartial monitoring supports diaspora investors, developers, and property owners who want clearer visibility of site activity, materials, milestones, and expenditure.",
+    "image": "construction-source.jpeg",
+    "crop": [356, 58, 291, 234],
+    "includes": ["Contractor liaison, programme tracking, and milestone verification", "Delivered materials checks and invoice auditing", "Budget versus actual expenditure reviews", "Scheduled and unannounced site inspections by arrangement", "High-resolution photo logs and progress videos", "Live walkthrough calls and regular project updates"],
+    "note": "The monitoring scope is agreed with you and coordinated with your appointed project consultants. Statutory design, approvals, and certification remain with the relevant professionals."
+  },
+  {
+    "slug": "errands-and-trusted-representation",
+    "title": "Errands & Trusted Representation",
+    "group": "support",
+    "eyebrow": "Your trusted presence in Kenya.",
+    "summary": "Discreet, dependable handling of local errands, collections, and administrative coordination.",
+    "description": "Be present without having to be there. We help diaspora Kenyans, busy professionals, expatriates, and out-of-town investors coordinate everyday tasks with clear updates and a reliable local point of contact.",
+    "image": "errands-source.jpeg",
+    "crop": [313, 58, 332, 189],
+    "includes": ["Official document collection, processing coordination, and dispatch", "In-person administrative, legal office, and corporate office representation where authorised", "Secure parcel collection, courier coordination, and delivery", "Routine bill settlement coordination and local administrative errands", "Real-time updates with photo logs and verification reports"],
+    "note": "Any representation, collections, or payments are subject to your specific authority and the receiving organisation's requirements."
+  },
+  {
+    "slug": "procurement-and-import-coordination",
+    "title": "Procurement & Import Coordination",
+    "group": "support",
+    "eyebrow": "Source smarter. Import confidently.",
+    "summary": "Sourcing, supplier checks, and delivery coordination for purchases within Kenya and abroad.",
+    "description": "From a vehicle to the right materials for your project, we coordinate the steps between sourcing and delivery. Get a clearer view of suppliers, shipment progress, and handover, with local support throughout.",
+    "image": "procurement-source.jpeg",
+    "crop": [302, 58, 344, 282],
+    "includes": ["Vehicle sourcing, inspection coordination, and background checks", "Shipping tracking, customs clearing coordination, and registration assistance", "Construction materials, machinery, and furniture sourcing", "Supplier verification and price negotiation", "Live photo and video updates", "Delivery coordination and supervision across Kenya"],
+    "note": "We confirm the sourcing brief and service scope before proceeding. Supplier, freight, duty, and third-party charges are quoted separately as applicable."
+  }
+]

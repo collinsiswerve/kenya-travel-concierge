@@ -1,0 +1,3 @@
+Mode: built-in image generation. Use case: photorealistic-natural.
+Asset: website opening landscape, saved as dist/assets/kenya-savannah.png.
+Prompt: An original cinematic editorial travel landscape in an ultra-wide horizontal composition: a graceful umbrella acacia on the right third of an expansive Kenyan savannah; low hills and distant blue mountains; early golden morning light; muted olive greens and warm ochre grasses; atmospheric haze and subtle natural grain. Tranquil open landscape on the left with a shadowed foreground and negative space for white headline text. Understated, high-end travel photography. No people, buildings, vehicles, animals, text, logos, or watermarks. Illustrative brand imagery, not a photograph of a named property.
