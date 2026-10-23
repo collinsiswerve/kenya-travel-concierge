@@ -1,51 +1,109 @@
-"""Verify the distributable's links, assets, service coverage and document structure."""
+"""Check both the GitHub Pages upload and the retained dist website."""
 from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlsplit, unquote
 import json
+import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-DIST = ROOT / 'dist'
-errors = []
-pages = list(DIST.rglob('*.html'))
+SERVICES = json.loads((ROOT / 'data/services.json').read_text(encoding='utf-8'))
+ERRORS = []
+
 
 class Document(HTMLParser):
     def __init__(self):
-        super().__init__(); self.links=[]; self.ids=set(); self.h1=0; self.title=False; self.description=False; self.images=[]
+        super().__init__()
+        self.links = []
+        self.ids = set()
+        self.h1 = 0
+        self.title = False
+        self.description = False
+        self.canonical = ''
+
     def handle_starttag(self, tag, attrs):
-        a=dict(attrs)
-        if 'id' in a:
-            if a['id'] in self.ids: errors.append(f'Duplicate id: {a["id"]}')
-            self.ids.add(a['id'])
-        if tag=='h1': self.h1+=1
-        if tag=='title': self.title=True
-        if tag=='meta' and a.get('name')=='description': self.description=True
-        if tag=='a' and a.get('target')=='_blank' and 'noopener' not in a.get('rel',''):
-            errors.append('External target lacks noopener')
-        if tag=='img' and not a.get('alt'): errors.append('Image has no alt text')
-        for k in ('href','src'):
-            if a.get(k): self.links.append(a[k])
+        attrs = dict(attrs)
+        if 'id' in attrs:
+            if attrs['id'] in self.ids:
+                ERRORS.append('Duplicate id: ' + attrs['id'])
+            self.ids.add(attrs['id'])
+        if tag == 'h1':
+            self.h1 += 1
+        if tag == 'title':
+            self.title = True
+        if tag == 'meta' and attrs.get('name') == 'description':
+            self.description = True
+        if tag == 'link' and attrs.get('rel') == 'canonical':
+            self.canonical = attrs.get('href', '')
+        if tag == 'a' and attrs.get('target') == '_blank' and 'noopener' not in attrs.get('rel', ''):
+            ERRORS.append('External target lacks noopener')
+        if tag == 'img' and not attrs.get('alt'):
+            ERRORS.append('Image has no alt text')
+        for key in ('href', 'src', 'action'):
+            if attrs.get(key):
+                self.links.append(attrs[key])
 
-for page in pages:
-    doc=Document(); doc.feed(page.read_text())
-    if doc.h1!=1 or not doc.title or not doc.description: errors.append(f'{page.relative_to(DIST)}: missing heading/title/description')
-    for link in doc.links:
-        u=urlsplit(link)
-        if u.scheme or u.netloc: continue
-        if u.path:
-            target=(DIST/unquote(u.path).lstrip('/')) if u.path.startswith('/') else (page.parent/unquote(u.path))
-            if target.is_dir(): target=target/'index.html'
-            if not target.exists(): errors.append(f'{page.relative_to(DIST)}: missing local target {link}')
-        elif u.fragment and u.fragment not in doc.ids:
-            errors.append(f'{page.relative_to(DIST)}: missing anchor {link}')
 
-services=json.loads((ROOT/'data/services.json').read_text())
-assert len(services)==10
-for service in services:
-    file=DIST/'services'/service['slug']/'index.html'
-    if not file.exists(): errors.append(f'Missing service page: {service["slug"]}')
-    elif 'service='+service['slug'] not in file.read_text(): errors.append(f'Enquiry selection missing: {service["slug"]}')
-if errors:
-    print('\n'.join(sorted(set(errors)))); sys.exit(1)
-print(f'PASS: {len(pages)} HTML documents; all local links and assets; all ten services; headings, metadata, alt text, and enquiry links.')
+def inspect(site):
+    files = list(site.rglob('*.html'))
+    if site == ROOT:
+        files = [file for file in files if not file.is_relative_to(ROOT / 'dist')]
+    documents = {}
+    for file in files:
+        document = Document()
+        document.feed(file.read_text(encoding='utf-8'))
+        documents[file.resolve()] = document
+        if document.h1 != 1 or not document.title or not document.description:
+            ERRORS.append(str(file.relative_to(ROOT)) + ': missing heading/title/description')
+    homepage = documents[(site / 'index.html').resolve()]
+    public_base = urlsplit(homepage.canonical).path.rstrip('/')
+    checked = 0
+    for file, document in documents.items():
+        for link in document.links:
+            url = urlsplit(link)
+            if url.scheme or url.netloc:
+                continue
+            if url.path.startswith('/'):
+                local = unquote(url.path)
+                if public_base and local.startswith(public_base + '/'):
+                    local = local[len(public_base):]
+                target = site / local.lstrip('/')
+            elif url.path:
+                target = file.parent / unquote(url.path)
+            else:
+                target = file
+            target = target.resolve()
+            if target.is_dir():
+                target = target / 'index.html'
+            if not target.is_file():
+                ERRORS.append(str(file.relative_to(ROOT)) + ': missing target ' + link)
+            elif url.fragment and target in documents and unquote(url.fragment) not in documents[target].ids:
+                ERRORS.append(str(file.relative_to(ROOT)) + ': missing anchor ' + link)
+            checked += 1
+    for css in (site / 'assets').glob('*.css'):
+        for match in re.finditer(r"""url\(\s*['"]?([^)'"]+)""", css.read_text(encoding='utf-8')):
+            url = urlsplit(match.group(1).strip())
+            if not url.scheme and not url.netloc and not (css.parent / unquote(url.path)).is_file():
+                ERRORS.append(str(css.relative_to(ROOT)) + ': missing CSS resource ' + url.path)
+    if len(SERVICES) != 10:
+        ERRORS.append('Expected ten services')
+    for service in SERVICES:
+        file = site / 'services' / service['slug'] / 'index.html'
+        if not file.is_file():
+            ERRORS.append('Missing service page: ' + str(file.relative_to(ROOT)))
+        elif 'service=' + service['slug'] not in file.read_text(encoding='utf-8'):
+            ERRORS.append('Enquiry selection missing: ' + service['slug'])
+    expected = 15 if site == ROOT else 16
+    if len(documents) != expected:
+        ERRORS.append('Unexpected HTML page count in ' + str(site))
+    return len(documents), checked
+
+
+results = [inspect(ROOT), inspect(ROOT / 'dist')]
+if ERRORS:
+    print('\n'.join(sorted(set(ERRORS))))
+    sys.exit(1)
+print('PASS: root contains all 14 content pages and 404.html; dist retains its 404 route; '
+      + str(sum(links for _, links in results))
+      + ' local links, assets and anchors; fonts; all ten services; metadata and enquiry links.')
+

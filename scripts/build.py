@@ -3,11 +3,14 @@ from pathlib import Path
 from html import escape as e
 import json
 import os
+import re
+import shutil
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'dist'
 SERVICES = json.loads((ROOT / 'data/services.json').read_text())
-ORIGIN = os.getenv('SITE_URL', 'https://kenya-travel-concierge.upbeatfern7.chatgpt.site').rstrip('/')
+ORIGIN = os.getenv('SITE_URL', 'https://collinsiswerve.github.io/kenya-travel-concierge').rstrip('/')
 GROUPS = {'travel': 'Travel & Arrivals', 'living': 'Life & Relocation', 'support': 'Your Local Presence'}
 PHONE = '+254 717 762323'
 EMAIL = 'info.kenyatravelconcierge@gmail.com'
@@ -53,6 +56,11 @@ def page(title, description, body, path='/', current=''):
     schema = {'@context':'https://schema.org','@type':'Organization','name':'Kenya Travel Concierge','url':ORIGIN,'telephone':'+254717762323','email':EMAIL,'sameAs':['https://www.instagram.com/kenyatravelconcierge/']}
     html = f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#123b30"><title>{e(title)} | Kenya Travel Concierge</title><meta name="description" content="{e(description)}"><link rel="canonical" href="{url}"><meta property="og:title" content="{e(title)} | Kenya Travel Concierge"><meta property="og:description" content="{e(description)}"><meta property="og:type" content="website"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/assets/kenya-savannah.png"><meta name="twitter:card" content="summary_large_image"><link rel="icon" type="image/svg+xml" href="/assets/favicon.svg"><link rel="stylesheet" href="/assets/fonts.css"><link rel="stylesheet" href="/assets/styles.css"><script src="/assets/app.js" defer></script><script type="application/ld+json">{json.dumps(schema)}</script></head><body id="top">{header(current)}<main id="main">{body}</main>{footer()}</body></html>'''
     html = html.replace('<br>', '<br> ')
+    # Relative links keep pages working under a GitHub project URL or a domain.
+    depth = len([part for part in path.strip('/').split('/') if part])
+    prefix = '../' * depth or './'
+    html = re.sub(r'''((?:href|src|action)=["'])/(?!/)''',
+                  lambda match: match.group(1) + prefix, html)
     target=OUT / path.lstrip('/') / 'index.html'
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(html)
@@ -102,8 +110,24 @@ if __name__ == '__main__':
     home(); catalogue(); contact(); privacy()
     for s in SERVICES: detail(s)
     page('Page Not Found', 'Find your way back to Kenya Travel Concierge.', '<section class="page-intro wrap"><span class="eyebrow">A SMALL DETOUR</span><h1>Let’s get you<br><em>back on your way.</em></h1><p>The page you are looking for could not be found.</p><a class="button button-green" href="/">Back to KTC '+ARROW+'</a></section>', '/404/')
-    (OUT/'404.html').write_text((OUT/'404/index.html').read_text())
+    # GitHub serves 404.html at arbitrary missing URLs; use the public base path
+    # so its assets and navigation still resolve at any missing-page depth.
+    missing_page = OUT/'404/index.html'
+    base_path = urlsplit(ORIGIN).path.rstrip('/')
+    missing_html = re.sub(r'''((?:href|src|action)=["'])\.\./''',
+                          lambda match: match.group(1) + base_path + '/',
+                          missing_page.read_text())
+    missing_html = missing_html.replace(ORIGIN + '/404/', ORIGIN + '/404.html')
+    (OUT/'404.html').write_text(missing_html)
     paths=['/','/services/','/contact/','/privacy/']+[f'/services/{s["slug"]}/' for s in SERVICES]
     (OUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{ORIGIN}{p}</loc></url>' for p in paths)+'</urlset>')
     (OUT/'robots.txt').write_text(f'User-agent: *\nAllow: /\nSitemap: {ORIGIN}/sitemap.xml\n')
-    print(f'Built {len(paths)} pages, a 404 page, and sitemap into {OUT}')
+    # Publish a second ready-to-upload copy at the repository root. Keep dist
+    # and its original Sites metadata so the complete editable project survives.
+    for source in OUT.rglob('*'):
+        if source.is_file() and source.relative_to(OUT).as_posix() != '404/index.html':
+            target = ROOT / source.relative_to(OUT)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+    (ROOT/'.nojekyll').touch()
+    print(f'Built {len(paths)} content pages plus 404.html; published at {ROOT}')

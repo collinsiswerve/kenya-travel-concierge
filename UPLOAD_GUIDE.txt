@@ -1,58 +1,74 @@
-KENYA TRAVEL CONCIERGE — MANUAL GITHUB UPLOAD
+KENYA TRAVEL CONCIERGE — GITHUB PAGES UPLOAD GUIDE
+Updated 23 October 2026
 
-This ZIP contains the complete finished website: 16 HTML pages, ten dedicated
-service pages, images, fonts, styles, JavaScript, and editable source files.
-The original website files are unchanged.
+This ZIP contains the complete website, corrected for your existing repository:
+https://github.com/collinsiswerve/kenya-travel-concierge
 
-UPLOAD USING YOUR BROWSER
+The homepage is now at the top level. Page links, images and fonts are prepared
+for the GitHub Pages project address. The design and service content are retained.
 
-1. Download Kenya_Travel_Concierge_Website.zip to your computer.
-2. In Windows File Explorer, right-click the ZIP and choose Extract All.
-3. Open the extracted folder. You should see README.md, package.json and
-   the folders dist, data, docs and scripts.
-4. Sign in to GitHub using your normal account and open:
-   https://github.com/collinsiswerve/kenya-travel-concierge
-5. Select the Code tab and ensure the branch is main.
-6. Above the file list, select Add file, then Upload files. Direct link:
-   https://github.com/collinsiswerve/kenya-travel-concierge/upload/main
-7. From the extracted folder, select the contents and drag them into the
-   GitHub upload area. Drag the folders along with the files to preserve
-   their internal structure. Do not upload the ZIP itself or its outer folder.
-   README.md and dist must appear at the repository's top level.
-8. Wait until every file finishes uploading.
-9. Enter the commit message: Add complete Kenya Travel Concierge website
-10. Select Commit directly to the main branch, then click Commit changes.
-    If GitHub requires a new branch, choose Create a new branch, click
-    Propose changes, create the pull request, then merge it into main.
-11. After committing, confirm the repository shows dist, data, docs, scripts,
-    README.md and package.json at the top level. Open dist/index.html in the
-    repository to confirm the homepage file is present.
+1. EXTRACT THE ZIP
+Right-click the downloaded ZIP in Windows File Explorer and choose Extract All.
+Open the extracted folder. It should contain index.html, assets, services,
+contact, privacy, README.md, and the editable project folders.
 
-All website files fit GitHub's browser upload limits (100 files per batch,
-25 MiB per file). You do not need a key or token for this browser upload.
-Optional hidden files .gitignore and .openai/hosting.json are included in the
-complete source export; they are not needed to run the site on another host.
-This guide itself may be uploaded or left on your computer.
+2. UPLOAD THE EXTRACTED CONTENTS
+Open your repository, choose Code, then Add file > Upload files.
+Select all the contents INSIDE the extracted folder and drag them into GitHub.
+Keep the folder structure. Upload the contents, not the ZIP and not its outer
+folder. Wait for all files to finish uploading.
 
-WHAT EACH FOLDER CONTAINS
+You can upload these files over the existing project. Matching files will be
+replaced; the previous dist and source folders can stay.
+The package fits GitHub's browser upload limits in a single batch.
 
-dist       Ready-to-host website: homepage, service pages, images and fonts.
-data       Service descriptions used when regenerating the website.
-scripts    Python build and validation scripts; not needed by website visitors.
-docs       Existing homepage preview image.
-README.md  Editing, hosting, and enquiry details.
+3. COMMIT
+Enter a message such as: Prepare website for GitHub Pages
+Choose Commit directly to the main branch, then Commit changes.
+On the repository's Code page, confirm index.html appears at the top level
+beside README.md. If index.html is inside another added folder, move the
+contents to the top level before continuing.
 
-UPLOADING AND HOSTING
+4. SET GITHUB PAGES
+Open Settings > Pages.
+Under Build and deployment, use these exact settings:
 
-Committing the files stores the website on GitHub. Publishing a public website
-is a separate hosting step. A static host should serve the dist folder.
-The original site uses domain-root links. The default GitHub project Pages
-address ending /kenya-travel-concierge/ needs a path adjustment or a custom
-domain before all navigation and assets will work. Simply enabling Pages
-from the repository root will not publish this dist-based layout correctly.
+Source:  Deploy from a branch
+Branch:  main
+Folder:  /(root)
+
+Click Save if the settings changed. If Save is greyed out and the settings
+already match, they are already saved.
+Leave Custom domain blank for the standard GitHub Pages address.
+This package uses branch publishing; the separate deploy-pages.yml file from
+the earlier instructions is not required.
+
+5. OPEN THE WEBSITE
+Open the Actions tab to see the Pages deployment finish successfully.
+Return to Settings > Pages and click Visit site.
+Publishing can take up to 10 minutes after the commit.
+
+Your website address after deployment:
+https://collinsiswerve.github.io/kenya-travel-concierge/
+
+If the page still shows an older version, refresh with Ctrl+F5.
+If the build fails, open the failed run in Actions to read the error message.
+
+WHAT THE MAIN ITEMS ARE
+index.html        The homepage GitHub Pages opens.
+assets/           Website images, fonts, stylesheets and JavaScript.
+services/         Service catalogue and ten service detail pages.
+contact/          Enquiry page.
+privacy/          Privacy information.
+404.html          Missing-page fallback.
+.nojekyll         Tells GitHub Pages to publish the files as a static website.
+dist/             Retained built copy and source assets for future edits.
+data/             Editable service descriptions.
+scripts/          Build and validation scripts for future edits.
+docs/             Existing homepage preview.
+README.md         Project and editing information.
+
+No installation or terminal commands are needed for the upload steps above.
 
 The enquiry form prepares a WhatsApp or email message for the visitor to
-review and send; it does not store enquiries in a database.
-
-Official GitHub upload instructions:
-https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository
+review and send; it does not store enquiries in a website database.

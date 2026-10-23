@@ -14,13 +14,13 @@ A premium, responsive static website for Kenya Travel Concierge. Built with HTML
 
 ## Run and edit
 
-The ready-to-host website is in `dist/`. Serve that directory with any static web server. For example:
+The ready-to-upload website starts at `index.html` in this folder. A parallel built copy remains in `dist/`. Serve the project folder to preview it. For example:
 
 ```sh
-python3 -m http.server 8080 --directory dist
+python3 -m http.server 8080
 ```
 
-Edit service descriptions and inclusions in `data/services.json`. Shared page templates and general copy are in `scripts/build.py`; styles and interactions are in `dist/assets/styles.css` and `dist/assets/app.js`.
+Edit service descriptions and inclusions in `data/services.json`. Shared page templates and general copy are in `scripts/build.py`; styles and interactions are in `dist/assets/styles.css` and `dist/assets/app.js`. Rebuilding also copies the updated website and assets to the project root for GitHub Pages.
 
 Regenerate the HTML and check links:
 
@@ -32,13 +32,20 @@ node --check dist/assets/app.js
 
 Python 3.10+ is needed only for regeneration. Node is used only for the optional JavaScript syntax check. The published site needs neither.
 
-## Hosting
+## Hosting on GitHub Pages
 
-Deploy `dist/` as the static document root. Routes use root-relative links and work on a domain or subdomain. Configure the host to use `404.html` for missing routes. Set `SITE_URL=https://your-domain.example` when rebuilding to update canonical and social URLs and the sitemap.
+This export is prepared for `collinsiswerve/kenya-travel-concierge`.
 
-For GitHub Pages, use a custom domain or a user-site repository to preserve root-relative routes. The complete website is committed, so static hosting does not require a build step.
+1. Extract the ZIP and upload all extracted files and folders directly into the repository on `main`. The repository must show `index.html` next to `README.md`, not inside an extra outer folder.
+2. Open **Settings > Pages**.
+3. Set **Source: Deploy from a branch**, **Branch: main**, and **Folder: /(root)**. Save if the settings changed.
+4. After the Pages deployment succeeds, open **Visit site** or `https://collinsiswerve.github.io/kenya-travel-concierge/`.
 
-The `.openai/hosting.json` file holds the connected Sites project identity. Preserve it when updating this specific Site. A separate deployment on another host does not need that file.
+See `UPLOAD_GUIDE.txt` for the complete browser upload steps. No custom Actions workflow or build command is required on GitHub. The included `.nojekyll` file selects static publishing. Navigation, stylesheets and font URLs support the GitHub project address; canonical and sitemap URLs use that address as well.
+
+If publishing at a different URL, set `SITE_URL` to its complete public base URL when rebuilding. The `404.html` navigation uses this base URL so it also works at missing nested routes.
+
+The `.openai/hosting.json` file retains the original connected Sites project identity and still points to `dist/`. Preserve it when updating that Site. GitHub Pages serves the ready copy at the repository root.
 
 ## Enquiries
 
