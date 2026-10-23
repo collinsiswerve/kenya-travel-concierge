@@ -35,6 +35,25 @@ The first PageSpeed Insights run on 23 October 2026 reported SEO 100, Performanc
 
 The follow-up implementation removes the two render-blocking stylesheet requests by embedding the small shared CSS and font declarations, adds the AVIF variant, darkens muted text for legibility, and preserves supporting images' natural proportions. Font URLs inside embedded styles are checked for nested routes and the missing-page fallback. GitHub Pages controls response cache headers, so cache-lifetime findings may remain on this host. Scores are lab observations rather than ranking or field-performance guarantees.
 
+### Final mobile lab check after the follow-up
+
+PageSpeed Insights on 23 October 2026 at 16:07 (Africa/Nairobi), emulated Moto G Power and slow 4G:
+
+| Category or metric | First run | Follow-up run |
+| --- | ---: | ---: |
+| Performance | 83 | 96 |
+| Accessibility | 97 | 97 |
+| Best Practices | 96 | 100 |
+| SEO, basic automated checks | 100 | 100 |
+| First Contentful Paint | 2.3 s | 0.8 s |
+| Largest Contentful Paint | 4.2 s | 2.9 s |
+| Total Blocking Time | 0 ms | 0 ms |
+| Cumulative Layout Shift | 0.038 | 0.031 |
+
+Report: https://pagespeed.web.dev/analysis/https-collinsiswerve-github-io-kenya-travel-concierge/ff0mjixb0n?form_factor=mobile
+
+There was no field data. These are homepage lab measurements; they do not establish a field Core Web Vitals pass or a Google ranking. The remaining contrast flag is the faint, aria-hidden decorative KTC watermark. Readable body/footer text was darkened and the supporting-image aspect-ratio finding is resolved. A full manual accessibility review is not claimed.
+
 ## Next: permanent domain
 
 Confirm the preferred domain and ownership before changing canonical URLs. A custom domain is useful for a consistent brand address; it does not guarantee higher rankings.
@@ -74,7 +93,7 @@ A Google Business Profile is appropriate only if the business meets Google's eli
 
 - Deployment and source checks establish technical readiness, not Google indexing or a ranking promise.
 - No Google Search Console property has been verified and no sitemap has been submitted from an account.
-- The initial mobile lab result is recorded above. A field Core Web Vitals pass is not claimed; no field data was available in that run.
+- Both mobile lab results are recorded above. A field Core Web Vitals pass is not claimed; no field data was available.
 - Run PageSpeed Insights on the public homepage and a service page after deployment. Treat lab measurements separately from real-user field data.
 - Review Search Console impressions, queries, clicks, indexed pages and mobile experience as data accumulates. Enquiry tracking can be added after its scope and privacy requirements are agreed; no analytics or marketing tags have been installed.
 - A search results position and indexing date cannot be guaranteed.
