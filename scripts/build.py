@@ -9,8 +9,9 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'dist'
-SERVICES = json.loads((ROOT / 'data/services.json').read_text())
-ORIGIN = os.getenv('SITE_URL', 'https://collinsiswerve.github.io/kenya-travel-concierge').rstrip('/')
+SERVICES = json.loads((ROOT / 'data/services.json').read_text(encoding='utf-8'))
+SITE = json.loads((ROOT / 'data/site.json').read_text(encoding='utf-8'))
+ORIGIN = os.getenv('SITE_URL', SITE['url']).rstrip('/')
 GROUPS = {'travel': 'Travel & Arrivals', 'living': 'Life & Relocation', 'support': 'Your Local Presence'}
 PHONE = '+254 717 762323'
 EMAIL = 'info.kenyatravelconcierge@gmail.com'
@@ -21,7 +22,7 @@ CHECK = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 
 
 def photo(item, extra='', crop=None):
     x, y, w, h = crop or item['crop']
-    return f'<div class="source-photo {extra}" style="--cx:{x};--cy:{y};--cw:{w};--ch:{h}"><img src="/assets/{item["image"]}" alt="{e(item["title"])} — KTC brand imagery" loading="lazy" width="720" height="1600"></div>'
+    return f'<div class="source-photo {extra}" style="--cx:{x};--cy:{y};--cw:{w};--ch:{h}"><img src="/assets/{item["image"]}" alt="{e(item["title"])} — KTC brand imagery" loading="lazy" decoding="async" width="720" height="1600"></div>'
 
 def brand():
     return '<a class="brand" href="/" aria-label="Kenya Travel Concierge home"><span class="logo-window"><img src="/assets/ktc-logo-source.jpeg" width="720" height="1600" alt="KTC crown and laurel logo"></span><span class="brand-name">KENYA TRAVEL<span>CONCIERGE</span></span></a>'
@@ -51,26 +52,161 @@ def footer():
 def cta():
     return f'''<section class="closing-cta"><div class="wrap"><span class="eyebrow">A little less to think about</span><h2>Leave the details<br><em>with us.</em></h2><p>A visit. A move. Something that needs a trusted local hand.<br>Tell us what you have in mind.</p><a class="button button-light" href="/contact/">Start a conversation {DIAGONAL}</a></div><span class="cta-monogram" aria-hidden="true">KTC</span></section>'''
 
+def structured_data(title, description, path):
+    url = ORIGIN + path
+    organization_id = ORIGIN + '/#organization'
+    website_id = ORIGIN + '/#website'
+    service = next((item for item in SERVICES
+                    if path == '/services/' + item['slug'] + '/'), None)
+    page_type = 'ContactPage' if path == '/contact/' else (
+        'CollectionPage' if path == '/services/' else 'WebPage')
+    webpage = {
+        '@type': page_type, '@id': url + '#webpage', 'url': url,
+        'name': title, 'description': description,
+        'inLanguage': SITE['language'], 'isPartOf': {'@id': website_id},
+    }
+    graph = []
+    if path == '/':
+        graph.extend([
+            {
+                '@type': 'Organization', '@id': organization_id,
+                'name': SITE['name'], 'url': ORIGIN + '/',
+                'description': SITE['description'],
+                'telephone': SITE['telephone'], 'email': SITE['email'],
+                'sameAs': SITE['same_as'],
+                'areaServed': {'@type': 'Country', 'name': SITE['country']},
+                'contactPoint': {
+                    '@type': 'ContactPoint', 'telephone': SITE['telephone'],
+                    'email': SITE['email'], 'contactType': 'customer service',
+                    'availableLanguage': [SITE['language']],
+                },
+            },
+            {
+                '@type': 'WebSite', '@id': website_id, 'url': ORIGIN + '/',
+                'name': SITE['name'], 'inLanguage': SITE['language'],
+                'publisher': {'@id': organization_id},
+            },
+        ])
+        webpage['mainEntity'] = {'@id': organization_id}
+    elif service:
+        service_id = url + '#service'
+        webpage['mainEntity'] = {'@id': service_id}
+        graph.append({
+            '@type': 'Service', '@id': service_id, 'url': url,
+            'name': service['title'], 'serviceType': service['title'],
+            'description': service['description'],
+            'provider': {'@id': organization_id},
+            'areaServed': {'@type': 'Country', 'name': SITE['country']},
+            'mainEntityOfPage': {'@id': url + '#webpage'},
+        })
+    elif path == '/services/':
+        webpage['mainEntity'] = {
+            '@type': 'ItemList', 'numberOfItems': len(SERVICES),
+            'itemListElement': [
+                {
+                    '@type': 'ListItem', 'position': index + 1,
+                    'name': item['title'],
+                    'url': ORIGIN + '/services/' + item['slug'] + '/',
+                }
+                for index, item in enumerate(SERVICES)
+            ],
+        }
+    if path.startswith('/services/'):
+        trail = [('Home', ORIGIN + '/'), ('Our services', ORIGIN + '/services/')]
+        if service:
+            trail.append((service['title'], url))
+        breadcrumb_id = url + '#breadcrumb'
+        graph.append({
+            '@type': 'BreadcrumbList', '@id': breadcrumb_id,
+            'itemListElement': [
+                {'@type': 'ListItem', 'position': index + 1,
+                 'name': name, 'item': item_url}
+                for index, (name, item_url) in enumerate(trail)
+            ],
+        })
+        webpage['breadcrumb'] = {'@id': breadcrumb_id}
+    graph.append(webpage)
+    return {'@context': 'https://schema.org', '@graph': graph}
+
+
 def page(title, description, body, path='/', current=''):
     url = ORIGIN + path
-    schema = {'@context':'https://schema.org','@type':'Organization','name':'Kenya Travel Concierge','url':ORIGIN,'telephone':'+254717762323','email':EMAIL,'sameAs':['https://www.instagram.com/kenyatravelconcierge/']}
-    html = f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#123b30"><title>{e(title)} | Kenya Travel Concierge</title><meta name="description" content="{e(description)}"><link rel="canonical" href="{url}"><meta property="og:title" content="{e(title)} | Kenya Travel Concierge"><meta property="og:description" content="{e(description)}"><meta property="og:type" content="website"><meta property="og:url" content="{url}"><meta property="og:image" content="{ORIGIN}/assets/kenya-savannah.png"><meta name="twitter:card" content="summary_large_image"><link rel="icon" type="image/svg+xml" href="/assets/favicon.svg"><link rel="stylesheet" href="/assets/fonts.css"><link rel="stylesheet" href="/assets/styles.css"><script src="/assets/app.js" defer></script><script type="application/ld+json">{json.dumps(schema)}</script></head><body id="top">{header(current)}<main id="main">{body}</main>{footer()}</body></html>'''
+    is_error = path == '/404/'
+    service = next((item for item in SERVICES
+                    if path == '/services/' + item['slug'] + '/'), None)
+    if path == '/':
+        title = 'Private Concierge Services in Kenya'
+    elif service:
+        title = service['title'] + ' in Kenya'
+    full_title = title + ' | ' + SITE['name']
+    robots = 'noindex,follow' if is_error else 'index,follow,max-image-preview:large'
+    verification = ''
+    if path == '/' and SITE.get('google_site_verification'):
+        verification = '<meta name="google-site-verification" content="' + e(SITE['google_site_verification']) + '">'
+    preload = ''
+    if path == '/':
+        preload = '<link rel="preload" as="image" href="/assets/kenya-savannah.webp" type="image/webp" fetchpriority="high">'
+    schema_tag = ''
+    if not is_error:
+        schema = json.dumps(structured_data(title, description, path),
+                            ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
+        schema_tag = '<script type="application/ld+json">' + schema + '</script>'
+    social_image = ORIGIN + '/assets/kenya-savannah.png'
+    social_alt = 'An acacia tree above a sunlit Kenyan savannah — Kenya Travel Concierge'
+    html = f'''<!doctype html>
+<html lang="{e(SITE['language'])}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123b30">
+<title>{e(full_title)}</title>
+<meta name="description" content="{e(description)}">
+<meta name="robots" content="{robots}">
+<link rel="canonical" href="{e(url)}">
+{verification}{preload}
+<meta property="og:site_name" content="{e(SITE['name'])}">
+<meta property="og:title" content="{e(full_title)}">
+<meta property="og:description" content="{e(description)}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_KE">
+<meta property="og:url" content="{e(url)}">
+<meta property="og:image" content="{e(social_image)}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1942">
+<meta property="og:image:height" content="809">
+<meta property="og:image:alt" content="{e(social_alt)}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{e(full_title)}">
+<meta name="twitter:description" content="{e(description)}">
+<meta name="twitter:image" content="{e(social_image)}">
+<meta name="twitter:image:alt" content="{e(social_alt)}">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/assets/fonts.css">
+<link rel="stylesheet" href="/assets/styles.css">
+<script src="/assets/app.js" defer></script>
+{schema_tag}
+</head>
+<body id="top">{header(current)}<main id="main">{body}</main>{footer()}</body>
+</html>'''
     html = html.replace('<br>', '<br> ')
-    # Relative links keep pages working under a GitHub project URL or a domain.
+    # Keep links portable under the GitHub project path and a future domain.
     depth = len([part for part in path.strip('/').split('/') if part])
     prefix = '../' * depth or './'
     html = re.sub(r'''((?:href|src|action)=["'])/(?!/)''',
                   lambda match: match.group(1) + prefix, html)
-    target=OUT / path.lstrip('/') / 'index.html'
+    target = OUT / path.lstrip('/') / 'index.html'
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(html)
+    target.write_text(html, encoding='utf-8')
+
+
+
 
 def home():
     airport=SERVICES[0]; lifestyle=SERVICES[3]; construction=SERVICES[7]
     worlds=''
     for n,g,item,crop,desc in [(1,'travel',airport,[355,58,360,268],'Arrive well. Move effortlessly. Make the most of your time.'),(2,'living',lifestyle,[322,65,323,241],'From everyday details to a whole new beginning in Kenya.'),(3,'support',construction,[356,58,291,217],'A trusted pair of hands for your property, projects, and priorities.')]:
         worlds+=f'<a class="world-card" href="/services/?category={g}"><div class="world-visual">{photo(item,crop=crop)}<span class="world-number">0{n}</span><span class="world-arrow">{DIAGONAL}</span></div><h3>{GROUPS[g]}</h3><p>{desc}</p><span class="text-link">Explore services {ARROW}</span></a>'
-    body=f'''<section class="hero" aria-labelledby="hero-title"><img class="hero-image" src="/assets/kenya-savannah.png" alt="An acacia tree above a sunlit Kenyan savannah — illustrative landscape" fetchpriority="high" width="1942" height="809"><div class="hero-shade"></div><div class="wrap hero-content"><span class="eyebrow">YOUR PEOPLE ON THE GROUND IN KENYA</span><h1 id="hero-title">Kenya, with<br><em>peace of mind.</em></h1><p>From your first welcome to the details back home.<br>Private concierge, thoughtfully tailored to you.</p><div class="hero-actions"><a class="button button-light" href="/services/">Discover our services {DIAGONAL}</a><a class="hero-text-link" href="/contact/">Speak to a concierge {ARROW}</a></div></div><div class="wrap hero-bottom"><span>PRIVATE. LOCAL. RELIABLE.</span><a href="#welcome">A warmer welcome awaits <span>↓</span></a><span>KENYA TRAVEL CONCIERGE</span></div></section>
+    body=f'''<section class="hero" aria-labelledby="hero-title"><img class="hero-image" src="/assets/kenya-savannah.webp" alt="An acacia tree above a sunlit Kenyan savannah — illustrative landscape" fetchpriority="high" width="1942" height="809"><div class="hero-shade"></div><div class="wrap hero-content"><span class="eyebrow">YOUR PEOPLE ON THE GROUND IN KENYA</span><h1 id="hero-title">Kenya, with<br><em>peace of mind.</em></h1><p>From your first welcome to the details back home.<br>Private concierge, thoughtfully tailored to you.</p><div class="hero-actions"><a class="button button-light" href="/services/">Discover our services {DIAGONAL}</a><a class="hero-text-link" href="/contact/">Speak to a concierge {ARROW}</a></div></div><div class="wrap hero-bottom"><span>PRIVATE. LOCAL. RELIABLE.</span><a href="#welcome">A warmer welcome awaits <span>↓</span></a><span>KENYA TRAVEL CONCIERGE</span></div></section>
     <section class="intro-section section" id="welcome"><div class="wrap intro-layout"><div><span class="eyebrow">THE LUXURY OF HAVING IT HANDLED</span><h2>More time to enjoy.<br><em>Less to arrange.</em></h2></div><div class="intro-copy"><p>Whether you’re visiting Kenya, coming home, settling in, or looking after an investment from afar, having someone you trust makes all the difference.</p><p>We are Kenya Travel Concierge: your discreet local link for travel, everyday life, and the things that need a little more attention. One conversation. A service shaped around you.</p><a class="text-link" href="#about">Get to know KTC {ARROW}</a></div></div></section>
     <section class="worlds-section section"><div class="wrap"><div class="section-heading"><div><span class="eyebrow">A WORLD OF POSSIBILITIES</span><h2>How can we<br><em>take care of you?</em></h2></div><a class="text-link" href="/services/">View all ten services {ARROW}</a></div><div class="worlds-grid">{worlds}</div></div></section>
     <section class="find-section section" aria-labelledby="find-title"><div class="wrap find-layout"><div><span class="eyebrow">MAKE YOURSELF AT HOME</span><h2 id="find-title">Your plans.<br><em>Your kind of support.</em></h2><p>Start with what brings you here.<br>We’ll help with what comes next.</p></div><div class="finder"><div class="finder-tabs" role="tablist" aria-label="Find services for your plans"><button role="tab" id="tab-visit" aria-selected="true" aria-controls="panel-visit" tabindex="0">I’m visiting</button><button role="tab" id="tab-move" aria-selected="false" aria-controls="panel-move" tabindex="-1">I’m relocating</button><button role="tab" id="tab-away" aria-selected="false" aria-controls="panel-away" tabindex="-1">I’m abroad</button></div>

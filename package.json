@@ -5,6 +5,6 @@
   "description": "Premium responsive website for Kenya Travel Concierge",
   "scripts": {
     "build": "python3 scripts/build.py",
-    "check": "python3 scripts/check.py"
+    "check": "python3 scripts/check.py && python3 scripts/check_seo.py && node --check assets/app.js"
   }
 }

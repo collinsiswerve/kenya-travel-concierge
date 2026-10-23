@@ -14,13 +14,19 @@ contact, privacy, README.md, and the editable project folders.
 
 2. UPLOAD THE EXTRACTED CONTENTS
 Open your repository, choose Code, then Add file > Upload files.
-Select all the contents INSIDE the extracted folder and drag them into GitHub.
+Select contents INSIDE the extracted folder and drag them into GitHub.
+For a full current repository export, use the two batches described below.
 Keep the folder structure. Upload the contents, not the ZIP and not its outer
 folder. Wait for all files to finish uploading.
 
 You can upload these files over the existing project. Matching files will be
 replaced; the previous dist and source folders can stay.
-The package fits GitHub's browser upload limits in a single batch.
+GitHub accepts up to 100 files per browser upload batch. For the complete
+current repository, upload public files first: index.html, 404.html, assets,
+services, contact, privacy, robots.txt, sitemap.xml and .nojekyll. In a second
+batch upload the retained dist, data, docs and scripts folders, README.md,
+package.json, this guide and the original metadata files. The earlier
+100-file upload ZIP was a snapshot before the SEO asset additions.
 
 3. COMMIT
 Enter a message such as: Prepare website for GitHub Pages

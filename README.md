@@ -27,6 +27,7 @@ Regenerate the HTML and check links:
 ```sh
 python3 scripts/build.py
 python3 scripts/check.py
+python3 scripts/check_seo.py
 node --check dist/assets/app.js
 ```
 
@@ -46,6 +47,10 @@ See `UPLOAD_GUIDE.txt` for the complete browser upload steps. No custom Actions 
 If publishing at a different URL, set `SITE_URL` to its complete public base URL when rebuilding. The `404.html` navigation uses this base URL so it also works at missing nested routes.
 
 The `.openai/hosting.json` file retains the original connected Sites project identity and still points to `dist/`. Preserve it when updating that Site. GitHub Pages serves the ready copy at the repository root.
+
+## Search visibility and performance
+
+See [SEO readiness and launch plan](docs/SEO_READINESS.md) for implemented checks and the remaining Google account steps. Business details, the canonical base URL and an optional Search Console verification value are in `data/site.json`. The homepage uses an optimized WebP and all active font URLs use WOFF2; the source assets and licences are retained. `scripts/optimize_assets.py` regenerates those optimized files when its optional development libraries are installed. HTML rebuilding and hosting require no extra packages.
 
 ## Enquiries
 

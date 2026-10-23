@@ -1,0 +1,162 @@
+"""Verify indexable pages, schema, canonical URLs, sitemap and optimized assets."""
+from pathlib import Path
+from html.parser import HTMLParser
+from urllib.parse import urlsplit
+from xml.etree import ElementTree
+import json
+import os
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+SITE = json.loads((ROOT / 'data/site.json').read_text(encoding='utf-8'))
+SERVICES = json.loads((ROOT / 'data/services.json').read_text(encoding='utf-8'))
+ORIGIN = os.getenv('SITE_URL', SITE['url']).rstrip('/')
+ERRORS = []
+
+
+class Page(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.title = ''
+        self.metas = {}
+        self.canonical = ''
+        self.schemas = []
+        self.preloads = []
+        self.images = []
+        self.visible = []
+        self.in_title = False
+        self.in_schema = False
+        self.in_head = False
+        self.in_script = False
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == 'head':
+            self.in_head = True
+        if tag == 'title':
+            self.in_title = True
+        if tag == 'script':
+            self.in_script = True
+            self.in_schema = a.get('type') == 'application/ld+json'
+        if tag == 'meta':
+            self.metas[a.get('name', a.get('property', ''))] = a.get('content', '')
+        if tag == 'link' and a.get('rel') == 'canonical':
+            self.canonical = a.get('href', '')
+        if tag == 'link' and a.get('rel') == 'preload':
+            self.preloads.append(a)
+        if tag == 'img':
+            self.images.append(a)
+
+    def handle_endtag(self, tag):
+        if tag == 'head':
+            self.in_head = False
+        if tag == 'title':
+            self.in_title = False
+        if tag == 'script':
+            self.in_schema = False
+            self.in_script = False
+
+    def handle_data(self, data):
+        if self.in_title:
+            self.title += data
+        if self.in_schema:
+            try:
+                self.schemas.append(json.loads(data))
+            except ValueError:
+                ERRORS.append('Invalid JSON-LD')
+        if not self.in_head and not self.in_script:
+            self.visible.append(data)
+
+
+def read(path):
+    page = Page()
+    page.feed(path.read_text(encoding='utf-8'))
+    return page
+
+
+def require(condition, message):
+    if not condition:
+        ERRORS.append(message)
+
+
+paths = ['/', '/services/', '/contact/', '/privacy/'] + [
+    '/services/' + item['slug'] + '/' for item in SERVICES
+]
+titles = set()
+descriptions = set()
+for path in paths:
+    page = read(ROOT / path.lstrip('/') / 'index.html')
+    expected = ORIGIN + path
+    require(page.canonical == expected, 'Wrong canonical: ' + path)
+    require('noindex' not in page.metas.get('robots', ''), 'Indexing blocked: ' + path)
+    require(page.title not in titles and page.title.strip(), 'Duplicate/empty title: ' + path)
+    description = page.metas.get('description', '')
+    require(description and description not in descriptions, 'Duplicate/empty description: ' + path)
+    titles.add(page.title)
+    descriptions.add(description)
+    for key in ['og:title', 'og:description', 'og:image', 'og:image:alt',
+                'twitter:card', 'twitter:image', 'twitter:image:alt']:
+        require(bool(page.metas.get(key)), 'Missing ' + key + ': ' + path)
+    require(page.metas.get('og:url') == expected, 'Wrong social URL: ' + path)
+    require(bool(page.schemas), 'Missing structured data: ' + path)
+    graph = [node for schema in page.schemas for node in schema.get('@graph', [])]
+    types = {node.get('@type') for node in graph}
+    if path == '/':
+        require({'Organization', 'WebSite', 'WebPage'} <= types, 'Missing business/website graph')
+        hero = next((i for i in page.images if i.get('class') == 'hero-image'), {})
+        require(hero.get('src', '').endswith('kenya-savannah.webp'), 'Hero not optimized')
+        require(hero.get('fetchpriority') == 'high' and hero.get('loading') != 'lazy',
+                'Hero must load promptly')
+        require(any(p.get('href') == hero.get('src') and p.get('as') == 'image'
+                    for p in page.preloads), 'Hero preload does not match image')
+    if path.startswith('/services/'):
+        breadcrumbs = [node for node in graph if node.get('@type') == 'BreadcrumbList']
+        require(len(breadcrumbs) == 1, 'Missing breadcrumb: ' + path)
+        for breadcrumb in breadcrumbs:
+            items = breadcrumb.get('itemListElement', [])
+            require(len(items) >= 2, 'Breadcrumb too short: ' + path)
+            require([i.get('position') for i in items] == list(range(1, len(items) + 1)),
+                    'Breadcrumb ordering: ' + path)
+            require(all(i.get('name') and i.get('item', '').startswith(ORIGIN + '/')
+                        for i in items), 'Invalid breadcrumb entry: ' + path)
+    service = next((item for item in SERVICES
+                    if path == '/services/' + item['slug'] + '/'), None)
+    if service:
+        require('Service' in types, 'Missing service schema: ' + path)
+        service_nodes = [node for node in graph if node.get('@type') == 'Service']
+        require(len(service_nodes) == 1 and service_nodes[0].get('url') == expected,
+                'Wrong service schema URL: ' + path)
+        require(service['description'] in ' '.join(page.visible),
+                'Service description missing from visible page: ' + path)
+    for node in graph:
+        require('aggregateRating' not in node and 'review' not in node,
+                'Unverified review markup: ' + path)
+        require(not (node.get('@type') == 'Organization' and 'address' in node),
+                'Business address requires verification')
+
+sitemap = ElementTree.parse(ROOT / 'sitemap.xml')
+namespace = {'s': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+urls = [item.text for item in sitemap.findall('.//s:loc', namespace)]
+require(len(urls) == len(set(urls)) == len(paths), 'Sitemap count/duplicates')
+require(set(urls) == {ORIGIN + path for path in paths}, 'Sitemap and canonicals differ')
+require('noindex' in read(ROOT / '404.html').metas.get('robots', ''), '404 should not be indexed')
+for path in (ROOT / 'dist').rglob('*.html'):
+    if path.name != '404.html' and path.parent.name != '404':
+        require(read(path).canonical.startswith(ORIGIN + '/'),
+                'Alternate build canonical differs: ' + str(path))
+
+fonts = (ROOT / 'assets/fonts.css').read_text(encoding='utf-8')
+require('.ttf' not in fonts and fonts.count('.woff2') == 9, 'Efficient font URLs missing')
+for file in (ROOT / 'assets').glob('font-*.woff2'):
+    require(file.read_bytes().startswith(b'wOF2'), 'Invalid WOFF2: ' + file.name)
+require(len(list((ROOT / 'assets').glob('font-*.woff2'))) == 9, 'Missing font file')
+hero = ROOT / 'assets/kenya-savannah.webp'
+require(hero.is_file() and hero.stat().st_size < 500_000, 'Hero exceeds asset budget')
+require((ROOT / '.nojekyll').is_file(), 'GitHub static publishing marker missing')
+
+if ERRORS:
+    print('\n'.join(ERRORS))
+    sys.exit(1)
+print('PASS: 14 unique, indexable pages; matching sitemap/canonicals; Organization, '
+      'WebSite, Service and breadcrumb JSON-LD; social previews; error-page exclusion; '
+      'optimized hero and all nine WOFF2 fonts.')
