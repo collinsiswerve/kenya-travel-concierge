@@ -11,6 +11,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 SITE = json.loads((ROOT / 'data/site.json').read_text(encoding='utf-8'))
 SERVICES = json.loads((ROOT / 'data/services.json').read_text(encoding='utf-8'))
+IMAGERY = json.loads((ROOT / 'data/imagery.json').read_text(encoding='utf-8'))['images']
 ORIGIN = os.getenv('SITE_URL', SITE['url']).rstrip('/')
 ERRORS = []
 
@@ -128,10 +129,14 @@ for path in paths:
     if path == '/':
         require({'Organization', 'WebSite', 'WebPage'} <= types, 'Missing business/website graph')
         hero = next((i for i in page.images if i.get('class') == 'hero-image'), {})
-        require(hero.get('src', '').endswith('kenya-savannah.webp'), 'Hero not optimized')
+        require('/assets/images/kenya-luxury-hero-' in hero.get('src', '')
+                and hero.get('src', '').endswith('.webp'), 'Hero not optimized')
         require(hero.get('fetchpriority') == 'high' and hero.get('loading') != 'lazy',
                 'Hero must load promptly')
-        require(any(p.get('href') in {hero.get('src')} | {source.get('srcset') for source in page.sources} and p.get('as') == 'image'
+        candidates = {hero.get('src')} | {
+            entry.strip().split()[0] for source in page.sources
+            for entry in source.get('srcset', '').split(',') if entry.strip()}
+        require(any(p.get('href') in candidates and p.get('as') == 'image'
                     for p in page.preloads), 'Hero preload does not match image')
     if path.startswith('/services/'):
         breadcrumbs = [node for node in graph if node.get('@type') == 'BreadcrumbList']
@@ -146,6 +151,8 @@ for path in paths:
     service = next((item for item in SERVICES
                     if path == '/services/' + item['slug'] + '/'), None)
     if service:
+        require(any('/assets/images/' + service['image'] + '-' in image.get('src', '')
+                    for image in page.images), 'Service image missing: ' + path)
         require('Service' in types, 'Missing service schema: ' + path)
         service_nodes = [node for node in graph if node.get('@type') == 'Service']
         require(len(service_nodes) == 1 and service_nodes[0].get('url') == expected,
@@ -175,9 +182,19 @@ require('.ttf' not in fonts and fonts.count('.woff2') == 9, 'Efficient font URLs
 for file in (ROOT / 'assets').glob('font-*.woff2'):
     require(file.read_bytes().startswith(b'wOF2'), 'Invalid WOFF2: ' + file.name)
 require(len(list((ROOT / 'assets').glob('font-*.woff2'))) == 9, 'Missing font file')
-require((ROOT / 'assets/kenya-savannah.avif').stat().st_size < 300_000, 'AVIF exceeds asset budget')
-hero = ROOT / 'assets/kenya-savannah.webp'
-require(hero.is_file() and hero.stat().st_size < 500_000, 'Hero exceeds asset budget')
+require(len(IMAGERY) == 12, 'Expected twelve original brand images')
+for name, item in IMAGERY.items():
+    require((ROOT / item['source']).is_file(), 'Missing image source: ' + name)
+    require(item.get('alt') and 'brand illustration' in item['alt'],
+            'Missing descriptive illustration alternative: ' + name)
+    for width in item['widths']:
+        require(width <= item['width'], 'Image was enlarged: ' + name)
+        for extension, budget in [('avif', 300_000), ('webp', 500_000)]:
+            asset = ROOT / 'assets/images' / f'{name}-{width}.{extension}'
+            require(asset.is_file() and 0 < asset.stat().st_size < budget,
+                    'Missing image or exceeds asset budget: ' + asset.name)
+    if name != 'kenya-luxury-hero':
+        require(len(item['widths']) == 2, 'Responsive image variants missing: ' + name)
 require((ROOT / '.nojekyll').is_file(), 'GitHub static publishing marker missing')
 
 if ERRORS:
@@ -185,4 +202,4 @@ if ERRORS:
     sys.exit(1)
 print('PASS: 14 unique, indexable pages; matching sitemap/canonicals; Organization, '
       'WebSite, Service and breadcrumb JSON-LD; social previews; error-page exclusion; '
-      'optimized hero and all nine WOFF2 fonts.')
+      'twelve optimized responsive brand images and all nine WOFF2 fonts.')

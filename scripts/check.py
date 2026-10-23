@@ -42,6 +42,9 @@ class Document(HTMLParser):
         for key in ('href', 'src', 'action'):
             if attrs.get(key):
                 self.links.append(attrs[key])
+        for candidate in attrs.get('srcset', '').split(','):
+            if candidate.strip():
+                self.links.append(candidate.strip().split()[0])
 
 
 def inspect(site):

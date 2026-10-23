@@ -29,13 +29,13 @@ https://collinsiswerve.github.io/kenya-travel-concierge/
 
 These are asset byte reductions, not measured page-speed or ranking gains. A browser downloads the font weights it uses, not necessarily all nine. Font characters and horizontal metrics were compared after conversion. Original images and font files remain as editable sources; normal page loading references the optimized versions.
 
-## Independent mobile audit
+## Independent mobile audits before the imagery refresh
 
 The first PageSpeed Insights run on 23 October 2026 reported SEO 100, Performance 83, Accessibility 97 and Best Practices 96. It used an emulated Moto G Power with slow 4G, and had no real-user field data. Its report is https://pagespeed.web.dev/analysis/https-collinsiswerve-github-io-kenya-travel-concierge/262511oxyp?form_factor=mobile.
 
 The follow-up implementation removes the two render-blocking stylesheet requests by embedding the small shared CSS and font declarations, adds the AVIF variant, darkens muted text for legibility, and preserves supporting images' natural proportions. Font URLs inside embedded styles are checked for nested routes and the missing-page fallback. GitHub Pages controls response cache headers, so cache-lifetime findings may remain on this host. Scores are lab observations rather than ranking or field-performance guarantees.
 
-### Final mobile lab check after the follow-up
+### Mobile lab check after the SEO follow-up, before the imagery refresh
 
 PageSpeed Insights on 23 October 2026 at 16:07 (Africa/Nairobi), emulated Moto G Power and slow 4G:
 
@@ -53,6 +53,12 @@ PageSpeed Insights on 23 October 2026 at 16:07 (Africa/Nairobi), emulated Moto G
 Report: https://pagespeed.web.dev/analysis/https-collinsiswerve-github-io-kenya-travel-concierge/ff0mjixb0n?form_factor=mobile
 
 There was no field data. These are homepage lab measurements; they do not establish a field Core Web Vitals pass or a Google ranking. The remaining contrast flag is the faint, aria-hidden decorative KTC watermark. Readable body/footer text was darkened and the supporting-image aspect-ratio finding is resolved. A full manual accessibility review is not claimed.
+
+## Photorealistic imagery refresh
+
+On 23 October 2026 the hero, About image and ten service images were replaced with original photorealistic AI-generated brand illustrations. See IMAGERY.md for source files, generation prompts and provenance. The above mobile lab scores describe the prior imagery version and have not been asserted as measurements of this refresh.
+
+The new preferred hero is 183,273 bytes (AVIF), with a WebP fallback. Supporting images use two responsive widths, AVIF/WebP alternatives and descriptive text. The three homepage category images and About portrait load lazily; service lead images load eagerly with high priority. The hero preload matches its new asset. SEO, canonical, sitemap, schema and link checks continue to pass, including every responsive candidate on nested service routes. Image boxes preserve the existing layout proportions. Social preview metadata now references the new 1200 × 675 JPEG.
 
 ## Next: permanent domain
 

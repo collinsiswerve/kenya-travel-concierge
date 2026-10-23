@@ -50,7 +50,7 @@ The `.openai/hosting.json` file retains the original connected Sites project ide
 
 ## Search visibility and performance
 
-See [SEO readiness and launch plan](docs/SEO_READINESS.md) for implemented checks and the remaining Google account steps. Business details, the canonical base URL and an optional Search Console verification value are in `data/site.json`. The homepage uses optimized AVIF with a WebP fallback and all active font URLs use WOFF2; the source assets and licences are retained. `scripts/optimize_assets.py` regenerates those optimized files when its optional development libraries are installed. HTML rebuilding and hosting require no extra packages.
+See [SEO readiness and launch plan](docs/SEO_READINESS.md) for implemented checks and the remaining Google account steps. Business details, the canonical base URL and an optional Search Console verification value are in `data/site.json`. The hero and service imagery use optimized AVIF with responsive WebP fallbacks and all active font URLs use WOFF2; the source assets and licences are retained. `scripts/optimize_assets.py --images-only` regenerates the optimized imagery using Pillow; omit the flag to also regenerate WOFF2 fonts using fonttools and brotli. HTML rebuilding and hosting require no extra packages.
 
 ## Enquiries
 
@@ -58,9 +58,9 @@ The form prepares a message locally and opens WhatsApp or the visitor's email ap
 
 ## Assets
 
-The logo and supporting brand imagery come from the owner's supplied WhatsApp catalogue screenshots. The original screenshot files remain unchanged; CSS presents only the relevant logo or image region. The photographs within the supplied brand artwork are used as promotional illustrations, not as verified staff or property photographs.
+The supplied KTC logo is retained. Twelve original photorealistic AI-generated brand images now cover the homepage hero, About section and all ten services. They are illustrative scenes, not photographs of actual KTC staff, clients, properties, vehicles or named venues. Tully Luxury Travel informed the photographic direction; none of its imagery was copied.
 
-The savannah hero is an original AI-generated illustrative brand image, created with the built-in image-generation tool. The generation brief is in `data/hero-prompt.txt`. It is not a photograph of a named property or a specific offered itinerary.
+High-quality JPEG masters are in `data/image-masters/`. The full generation prompts, built-in tool provenance, descriptive alternatives and image dimensions are retained in `data/imagery-prompts.json` and `data/imagery.json`. See [imagery notes](docs/IMAGERY.md) for the asset map. Public pages load AVIF with responsive WebP fallbacks from `assets/images/`, mirrored in `dist/assets/images/`. Original supplied screenshots and the earlier savannah illustration remain as historical source material and are not used for service imagery.
 
 Cormorant Garamond and Manrope are self-hosted Google Fonts. Their SIL Open Font License notices are included in `dist/assets/`. The reference website informed the spacious editorial presentation; its code, photographs, copy, awards, and testimonials have not been copied.
 

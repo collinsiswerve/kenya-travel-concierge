@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'dist'
 SERVICES = json.loads((ROOT / 'data/services.json').read_text(encoding='utf-8'))
 SITE = json.loads((ROOT / 'data/site.json').read_text(encoding='utf-8'))
+IMAGERY = json.loads((ROOT / 'data/imagery.json').read_text(encoding='utf-8'))['images']
 ORIGIN = os.getenv('SITE_URL', SITE['url']).rstrip('/')
 GROUPS = {'travel': 'Travel & Arrivals', 'living': 'Life & Relocation', 'support': 'Your Local Presence'}
 PHONE = '+254 717 762323'
@@ -20,9 +21,26 @@ ARROW = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h
 DIAGONAL = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12"/></svg>'
 CHECK = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>'
 
-def photo(item, extra='', crop=None):
-    x, y, w, h = crop or item['crop']
-    return f'<div class="source-photo {extra}" style="--cx:{x};--cy:{y};--cw:{w};--ch:{h}"><img src="/assets/{item["image"]}" alt="{e(item["title"])} — KTC brand imagery" loading="lazy" decoding="async" width="720" height="1600"></div>'
+def picture(name, sizes, image_class='', priority=False):
+    image = IMAGERY[name]
+    def srcset(extension):
+        return ', '.join(f'/assets/images/{name}-{width}.{extension} {width}w'
+                         for width in image['widths'])
+    source = f'/assets/images/{name}-{image["widths"][-1]}.webp'
+    loading = 'loading="eager" fetchpriority="high"' if priority else 'loading="lazy"'
+    return (f'<picture><source type="image/avif" srcset="{srcset("avif")}" sizes="{sizes}">'
+            f'<img class="{image_class}" src="{source}" srcset="{srcset("webp")}" sizes="{sizes}" '
+            f'alt="{e(image["alt"])}" {loading} decoding="async" '
+            f'width="{image["width"]}" height="{image["height"]}"></picture>')
+
+
+def photo(item, extra='', crop=None, sizes='(max-width: 680px) calc(100vw - 62px), 42vw', priority=False):
+    # Keep the established layout proportions; use complete high-resolution images.
+    _, _, w, h = crop or item['crop']
+    name = item['image']
+    focus = IMAGERY[name].get('position', '50% 50%')
+    return (f'<div class="source-photo {extra}" style="--cw:{w};--ch:{h};--focus:{focus}">'
+            f'{picture(name, sizes, priority=priority)}</div>')
 
 def brand():
     return '<a class="brand" href="/" aria-label="Kenya Travel Concierge home"><span class="logo-window"><img src="/assets/ktc-logo-source.jpeg" width="720" height="1600" alt="KTC crown and laurel logo"></span><span class="brand-name">KENYA TRAVEL<span>CONCIERGE</span></span></a>'
@@ -145,7 +163,8 @@ def page(title, description, body, path='/', current=''):
         verification = '<meta name="google-site-verification" content="' + e(SITE['google_site_verification']) + '">'
     preload = ''
     if path == '/':
-        preload = '<link rel="preload" as="image" href="/assets/kenya-savannah.avif" type="image/avif" fetchpriority="high">'
+        width = IMAGERY['kenya-luxury-hero']['widths'][-1]
+        preload = f'<link rel="preload" as="image" href="/assets/images/kenya-luxury-hero-{width}.avif" type="image/avif" fetchpriority="high">'
     schema_tag = ''
     if not is_error:
         schema = json.dumps(structured_data(title, description, path),
@@ -155,8 +174,9 @@ def page(title, description, body, path='/', current=''):
     prefix = '../' * depth or './'
     font_css = (OUT / 'assets/fonts.css').read_text(encoding='utf-8').replace('url(./', 'url(' + prefix + 'assets/')
     shared_css = (OUT / 'assets/styles.css').read_text(encoding='utf-8')
-    social_image = ORIGIN + '/assets/kenya-savannah.png'
-    social_alt = 'An acacia tree above a sunlit Kenyan savannah — Kenya Travel Concierge'
+    social_image = ORIGIN + '/assets/images/kenya-luxury-social.jpg'
+    social_alt = IMAGERY['kenya-luxury-hero']['alt']
+    social_height = round(1200 * IMAGERY['kenya-luxury-hero']['height'] / IMAGERY['kenya-luxury-hero']['width'])
     html = f'''<!doctype html>
 <html lang="{e(SITE['language'])}">
 <head>
@@ -175,9 +195,9 @@ def page(title, description, body, path='/', current=''):
 <meta property="og:locale" content="en_KE">
 <meta property="og:url" content="{e(url)}">
 <meta property="og:image" content="{e(social_image)}">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1942">
-<meta property="og:image:height" content="809">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="{social_height}">
 <meta property="og:image:alt" content="{e(social_alt)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{e(full_title)}">
@@ -195,8 +215,12 @@ def page(title, description, body, path='/', current=''):
     # Keep links portable under the GitHub project path and a future domain.
     depth = len([part for part in path.strip('/').split('/') if part])
     prefix = '../' * depth or './'
-    html = re.sub(r'''((?:href|src|srcset|action)=["'])/(?!/)''',
+    html = re.sub(r'''((?:href|src|action)=["'])/(?!/)''',
                   lambda match: match.group(1) + prefix, html)
+    html = re.sub(r'''srcset="([^"]+)"''',
+                  lambda match: 'srcset="' + ', '.join(
+                      prefix + entry.strip().lstrip('/') if entry.strip().startswith('/')
+                      else entry.strip() for entry in match.group(1).split(',')) + '"', html)
     target = OUT / path.lstrip('/') / 'index.html'
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(html, encoding='utf-8')
@@ -205,18 +229,18 @@ def page(title, description, body, path='/', current=''):
 
 
 def home():
-    airport=SERVICES[0]; lifestyle=SERVICES[3]; construction=SERVICES[7]
+    airport=SERVICES[0]; lifestyle=SERVICES[3]; property_care=SERVICES[6]
     worlds=''
-    for n,g,item,crop,desc in [(1,'travel',airport,[355,58,360,268],'Arrive well. Move effortlessly. Make the most of your time.'),(2,'living',lifestyle,[322,65,323,241],'From everyday details to a whole new beginning in Kenya.'),(3,'support',construction,[356,58,291,217],'A trusted pair of hands for your property, projects, and priorities.')]:
-        worlds+=f'<a class="world-card" href="/services/?category={g}"><div class="world-visual">{photo(item,crop=crop)}<span class="world-number">0{n}</span><span class="world-arrow">{DIAGONAL}</span></div><h3>{GROUPS[g]}</h3><p>{desc}</p><span class="text-link">Explore services {ARROW}</span></a>'
-    body=f'''<section class="hero" aria-labelledby="hero-title"><picture><source type="image/avif" srcset="/assets/kenya-savannah.avif"><img class="hero-image" src="/assets/kenya-savannah.webp" alt="An acacia tree above a sunlit Kenyan savannah — illustrative landscape" fetchpriority="high" width="1942" height="809"></picture><div class="hero-shade"></div><div class="wrap hero-content"><span class="eyebrow">YOUR PEOPLE ON THE GROUND IN KENYA</span><h1 id="hero-title">Kenya, with<br><em>peace of mind.</em></h1><p>From your first welcome to the details back home.<br>Private concierge, thoughtfully tailored to you.</p><div class="hero-actions"><a class="button button-light" href="/services/">Discover our services {DIAGONAL}</a><a class="hero-text-link" href="/contact/">Speak to a concierge {ARROW}</a></div></div><div class="wrap hero-bottom"><span>PRIVATE. LOCAL. RELIABLE.</span><a href="#welcome">A warmer welcome awaits <span>↓</span></a><span>KENYA TRAVEL CONCIERGE</span></div></section>
+    for n,g,item,crop,desc in [(1,'travel',airport,[355,58,360,268],'Arrive well. Move effortlessly. Make the most of your time.'),(2,'living',lifestyle,[322,65,323,241],'From everyday details to a whole new beginning in Kenya.'),(3,'support',property_care,[356,58,291,217],'A trusted pair of hands for your property, projects, and priorities.')]:
+        worlds+=f'<a class="world-card" href="/services/?category={g}"><div class="world-visual">{photo(item,crop=crop,sizes='(max-width: 680px) calc(100vw - 44px), (max-width: 1280px) 30vw, 373px')}<span class="world-number">0{n}</span><span class="world-arrow">{DIAGONAL}</span></div><h3>{GROUPS[g]}</h3><p>{desc}</p><span class="text-link">Explore services {ARROW}</span></a>'
+    body=f'''<section class="hero" aria-labelledby="hero-title">{picture('kenya-luxury-hero', '100vw', 'hero-image', priority=True)}<div class="hero-shade"></div><div class="wrap hero-content"><span class="eyebrow">YOUR PEOPLE ON THE GROUND IN KENYA</span><h1 id="hero-title">Kenya, with<br><em>peace of mind.</em></h1><p>From your first welcome to the details back home.<br>Private concierge, thoughtfully tailored to you.</p><div class="hero-actions"><a class="button button-light" href="/services/">Discover our services {DIAGONAL}</a><a class="hero-text-link" href="/contact/">Speak to a concierge {ARROW}</a></div></div><div class="wrap hero-bottom"><span>PRIVATE. LOCAL. RELIABLE.</span><a href="#welcome">A warmer welcome awaits <span>↓</span></a><span>KENYA TRAVEL CONCIERGE</span></div></section>
     <section class="intro-section section" id="welcome"><div class="wrap intro-layout"><div><span class="eyebrow">THE LUXURY OF HAVING IT HANDLED</span><h2>More time to enjoy.<br><em>Less to arrange.</em></h2></div><div class="intro-copy"><p>Whether you’re visiting Kenya, coming home, settling in, or looking after an investment from afar, having someone you trust makes all the difference.</p><p>We are Kenya Travel Concierge: your discreet local link for travel, everyday life, and the things that need a little more attention. One conversation. A service shaped around you.</p><a class="text-link" href="#about">Get to know KTC {ARROW}</a></div></div></section>
     <section class="worlds-section section"><div class="wrap"><div class="section-heading"><div><span class="eyebrow">A WORLD OF POSSIBILITIES</span><h2>How can we<br><em>take care of you?</em></h2></div><a class="text-link" href="/services/">View all ten services {ARROW}</a></div><div class="worlds-grid">{worlds}</div></div></section>
     <section class="find-section section" aria-labelledby="find-title"><div class="wrap find-layout"><div><span class="eyebrow">MAKE YOURSELF AT HOME</span><h2 id="find-title">Your plans.<br><em>Your kind of support.</em></h2><p>Start with what brings you here.<br>We’ll help with what comes next.</p></div><div class="finder"><div class="finder-tabs" role="tablist" aria-label="Find services for your plans"><button role="tab" id="tab-visit" aria-selected="true" aria-controls="panel-visit" tabindex="0">I’m visiting</button><button role="tab" id="tab-move" aria-selected="false" aria-controls="panel-move" tabindex="-1">I’m relocating</button><button role="tab" id="tab-away" aria-selected="false" aria-controls="panel-away" tabindex="-1">I’m abroad</button></div>
       <div role="tabpanel" id="panel-visit" aria-labelledby="tab-visit"><span class="finder-label">YOUR VISIT, BEAUTIFULLY COORDINATED</span><h3>Arrive. Unwind.<br>We’ll take it from here.</h3><p>Airport welcomes, a car when you need it, and the reservations and personal touches that make your stay feel effortless.</p><div class="finder-links"><a href="/services/airport-meet-and-greet/">Airport meet & greet {ARROW}</a><a href="/services/car-hire-and-chauffeur/">Car hire & chauffeur {ARROW}</a><a href="/services/vip-and-executive-concierge/">VIP & executive concierge {ARROW}</a></div></div>
       <div role="tabpanel" id="panel-move" aria-labelledby="tab-move" hidden><span class="finder-label">A THOUGHTFUL START IN KENYA</span><h3>A new chapter.<br>A familiar helping hand.</h3><p>Get local guidance, find the right neighbourhood, prepare your home, and bring everyday life together with support around your move.</p><div class="finder-links"><a href="/services/relocation-and-settling-in/">Relocation & settling in {ARROW}</a><a href="/services/consultation-and-planning/">Consultation & planning {ARROW}</a><a href="/services/lifestyle-concierge/">Lifestyle concierge {ARROW}</a></div></div>
       <div role="tabpanel" id="panel-away" aria-labelledby="tab-away" hidden><span class="finder-label">CLOSER TO HOME, WHEREVER YOU ARE</span><h3>Your priorities here.<br>Your peace of mind there.</h3><p>Stay informed about your home, build, or local requests with coordinated checks, photo updates, and a trusted presence on the ground.</p><div class="finder-links"><a href="/services/property-care-and-business-oversight/">Property & business oversight {ARROW}</a><a href="/services/construction-oversight/">Construction oversight {ARROW}</a><a href="/services/errands-and-trusted-representation/">Errands & representation {ARROW}</a><a href="/services/procurement-and-import-coordination/">Procurement & imports {ARROW}</a></div></div></div></div></section>
-    <section class="about-section section" id="about"><div class="wrap about-layout"><div class="about-art">{photo(lifestyle,crop=[322,65,323,420])}<div class="about-seal"><span>THOUGHTFUL SERVICE</span><strong>Always<br><em>personal.</em></strong><span>KENYA TRAVEL CONCIERGE</span></div></div><div class="about-copy"><span class="eyebrow">PRIVATE. LOCAL. RELIABLE.</span><h2>A local connection.<br><em>A personal commitment.</em></h2><p>The best kind of support understands what matters to you. At KTC, we bring attentive coordination and a trusted local presence to the parts of life you’d rather leave in capable hands.</p><p>For Kenyans abroad, international guests, expatriates, professionals, and investors, we make the practical feel personal: listening first, agreeing the details, and keeping you informed.</p><div class="brand-values"><div><span>01</span><h3>Discretion, always</h3><p>Your time, priorities, and privacy guide the way we work.</p></div><div><span>02</span><h3>Clarity at every step</h3><p>Agreed arrangements and useful updates, wherever you are.</p></div></div></div></div></section>
+    <section class="about-section section" id="about"><div class="wrap about-layout"><div class="about-art">{photo({'image':'personal-concierge'},crop=[0,0,323,420],sizes='(max-width: 680px) calc(100vw - 78px), (max-width: 1280px) 40vw, 474px')}<div class="about-seal"><span>THOUGHTFUL SERVICE</span><strong>Always<br><em>personal.</em></strong><span>KENYA TRAVEL CONCIERGE</span></div></div><div class="about-copy"><span class="eyebrow">PRIVATE. LOCAL. RELIABLE.</span><h2>A local connection.<br><em>A personal commitment.</em></h2><p>The best kind of support understands what matters to you. At KTC, we bring attentive coordination and a trusted local presence to the parts of life you’d rather leave in capable hands.</p><p>For Kenyans abroad, international guests, expatriates, professionals, and investors, we make the practical feel personal: listening first, agreeing the details, and keeping you informed.</p><div class="brand-values"><div><span>01</span><h3>Discretion, always</h3><p>Your time, priorities, and privacy guide the way we work.</p></div><div><span>02</span><h3>Clarity at every step</h3><p>Agreed arrangements and useful updates, wherever you are.</p></div></div></div></div></section>
     <section class="approach-section section" id="approach"><div class="wrap"><div class="section-heading"><div><span class="eyebrow">THOUGHTFUL FROM THE FIRST CONVERSATION</span><h2>Effortless starts<br><em>with understanding.</em></h2></div><p class="section-aside">No two requests are quite the same.<br>That’s where we begin.</p></div><ol class="process-grid"><li><span>01 / CONNECT</span><h3>Tell us what matters.</h3><p>Share your plans, timing, and preferences. A visit, a move, or simply something you need handled.</p></li><li><span>02 / CONSIDER</span><h3>We shape the details.</h3><p>We confirm the scope, arrangements, and quotation with you before coordination begins.</p></li><li><span>03 / COORDINATE</span><h3>You get on with life.</h3><p>Your local concierge brings things together and keeps you informed along the way.</p></li></ol></div></section>
     {cta()}
     <section class="faq-section section"><div class="wrap faq-layout"><div><span class="eyebrow">A FEW HELPFUL DETAILS</span><h2>Before we<br><em>begin.</em></h2></div><div class="faq-list"><details><summary>Can you help if I’m outside Kenya?<span>+</span></summary><p>Yes. Our services are designed to support Kenyans abroad, international guests, and owners managing interests remotely. Tell us where you need local support and we’ll confirm the arrangements.</p></details><details><summary>Can I combine several services?<span>+</span></summary><p>Absolutely. You can combine airport reception, transport, lifestyle requests, relocation support, or other services into one agreed brief.</p></details><details><summary>How do you price your services?<span>+</span></summary><p>Services are quoted around your request, location, timing, and the coordination required. Contact us with a few details and we will confirm the service scope and applicable third-party costs before proceeding.</p></details><details><summary>What is the easiest way to reach you?<span>+</span></summary><p>Message us on <a href="{WA}" target="_blank" rel="noopener noreferrer">WhatsApp</a>, call <a href="tel:+254717762323">{PHONE}</a>, or email <a href="mailto:{EMAIL}">{EMAIL}</a>. Our enquiry page helps you put your request together.</p></details></div></div></section>'''
@@ -232,7 +256,7 @@ def catalogue():
 def detail(s):
     includes=''.join(f'<li>{CHECK}<span>{e(x)}</span></li>' for x in s['includes'])
     related=''.join(f'<a href="/services/{x["slug"]}/">{e(x["title"])} {ARROW}</a>' for x in SERVICES if x['group']==s['group'] and x['slug']!=s['slug'])
-    body=f'''<section class="service-detail-intro wrap"><div><a class="breadcrumb" href="/services/">Our services / {GROUPS[s['group']]}</a><span class="eyebrow">{GROUPS[s['group']]}</span><h1>{e(s['title'])}</h1><p class="detail-strapline">{e(s['eyebrow'])}</p><p>{e(s['description'])}</p><a class="button button-green" href="/contact/?service={s['slug']}">Enquire about this service {DIAGONAL}</a></div><div class="detail-art">{photo(s)}<span class="detail-art-caption">THE KTC COLLECTION / {GROUPS[s['group']].upper()}</span></div></section><section class="detail-includes section"><div class="wrap detail-layout"><div><span class="eyebrow">THOUGHTFULLY COORDINATED</span><h2>The details<br><em>we take care of.</em></h2><p>Each request is tailored to your plans.<br>We agree the scope and quotation with you.</p></div><div><ul class="includes-list">{includes}</ul><p class="service-note">{e(s['note'])}</p></div></div></section><section class="related-section section"><div class="wrap"><span class="eyebrow">A LITTLE MORE SUPPORT</span><h2>You may also<br><em>be looking for.</em></h2><div class="related-links">{related}</div><a class="text-link" href="/services/">Explore all services {ARROW}</a></div></section>{cta()}'''
+    body=f'''<section class="service-detail-intro wrap"><div><a class="breadcrumb" href="/services/">Our services / {GROUPS[s['group']]}</a><span class="eyebrow">{GROUPS[s['group']]}</span><h1>{e(s['title'])}</h1><p class="detail-strapline">{e(s['eyebrow'])}</p><p>{e(s['description'])}</p><a class="button button-green" href="/contact/?service={s['slug']}">Enquire about this service {DIAGONAL}</a></div><div class="detail-art">{photo(s, priority=True)}<span class="detail-art-caption">THE KTC COLLECTION / {GROUPS[s['group']].upper()}</span></div></section><section class="detail-includes section"><div class="wrap detail-layout"><div><span class="eyebrow">THOUGHTFULLY COORDINATED</span><h2>The details<br><em>we take care of.</em></h2><p>Each request is tailored to your plans.<br>We agree the scope and quotation with you.</p></div><div><ul class="includes-list">{includes}</ul><p class="service-note">{e(s['note'])}</p></div></div></section><section class="related-section section"><div class="wrap"><span class="eyebrow">A LITTLE MORE SUPPORT</span><h2>You may also<br><em>be looking for.</em></h2><div class="related-links">{related}</div><a class="text-link" href="/services/">Explore all services {ARROW}</a></div></section>{cta()}'''
     page(s['title'], s['summary'], body, f'/services/{s["slug"]}/')
 
 def contact():

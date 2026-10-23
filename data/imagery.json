@@ -1,0 +1,138 @@
+{
+  "generated_with": "OpenAI built-in image generation",
+  "created": "2026-10-23",
+  "purpose": "Illustrative brand imagery, not photographs of actual KTC staff, clients, vehicles, properties or offered venues.",
+  "images": {
+    "kenya-luxury-hero": {
+      "source": "data/image-masters/kenya-luxury-hero.jpg",
+      "alt": "Acacia-framed Kenyan savannah at dawn, viewed from a quiet stone terrace — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1672,
+      "height": 941,
+      "widths": [
+        1672
+      ]
+    },
+    "airport-welcome": {
+      "source": "data/image-masters/airport-welcome.jpg",
+      "alt": "Concierge welcoming a traveller beside a waiting airport transfer — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "private-chauffeur": {
+      "source": "data/image-masters/private-chauffeur.jpg",
+      "alt": "Chauffeur assisting a guest beside an executive vehicle in a leafy setting — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "executive-concierge": {
+      "source": "data/image-masters/executive-concierge.jpg",
+      "alt": "Private itinerary conversation in an elegant Nairobi-inspired lounge — AI-generated brand illustration",
+      "position": "50% 37%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "lifestyle-concierge": {
+      "source": "data/image-masters/lifestyle-concierge.jpg",
+      "alt": "A thoughtfully prepared breakfast on a sunlit garden terrace — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "relocation-home": {
+      "source": "data/image-masters/relocation-home.jpg",
+      "alt": "Welcome keys and carefully prepared living space opening onto a green garden — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "consultation-planning": {
+      "source": "data/image-masters/consultation-planning.jpg",
+      "alt": "Concierge and client reviewing plans together in a quiet lounge — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "property-stewardship": {
+      "source": "data/image-masters/property-stewardship.jpg",
+      "alt": "Property coordinator approaching a well-kept stone-and-timber home — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "construction-oversight": {
+      "source": "data/image-masters/construction-oversight.jpg",
+      "alt": "Site professionals in protective equipment reviewing a residential build — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "trusted-representation": {
+      "source": "data/image-masters/trusted-representation.jpg",
+      "alt": "Discreet handover of an envelope and house keys — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "procurement-coordination": {
+      "source": "data/image-masters/procurement-coordination.jpg",
+      "alt": "Coordinator checking a timber chair before protective packing — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1536,
+      "height": 1024,
+      "widths": [
+        640,
+        1280
+      ]
+    },
+    "personal-concierge": {
+      "source": "data/image-masters/personal-concierge.jpg",
+      "alt": "Concierge preparing a thoughtful welcome in a light-filled entrance — AI-generated brand illustration",
+      "position": "50% 50%",
+      "width": 1024,
+      "height": 1536,
+      "widths": [
+        640,
+        1024
+      ]
+    }
+  }
+}
