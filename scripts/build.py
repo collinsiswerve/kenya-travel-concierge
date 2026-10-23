@@ -145,12 +145,16 @@ def page(title, description, body, path='/', current=''):
         verification = '<meta name="google-site-verification" content="' + e(SITE['google_site_verification']) + '">'
     preload = ''
     if path == '/':
-        preload = '<link rel="preload" as="image" href="/assets/kenya-savannah.webp" type="image/webp" fetchpriority="high">'
+        preload = '<link rel="preload" as="image" href="/assets/kenya-savannah.avif" type="image/avif" fetchpriority="high">'
     schema_tag = ''
     if not is_error:
         schema = json.dumps(structured_data(title, description, path),
                             ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
         schema_tag = '<script type="application/ld+json">' + schema + '</script>'
+    depth = len([part for part in path.strip('/').split('/') if part])
+    prefix = '../' * depth or './'
+    font_css = (OUT / 'assets/fonts.css').read_text(encoding='utf-8').replace('url(./', 'url(' + prefix + 'assets/')
+    shared_css = (OUT / 'assets/styles.css').read_text(encoding='utf-8')
     social_image = ORIGIN + '/assets/kenya-savannah.png'
     social_alt = 'An acacia tree above a sunlit Kenyan savannah — Kenya Travel Concierge'
     html = f'''<!doctype html>
@@ -181,8 +185,7 @@ def page(title, description, body, path='/', current=''):
 <meta name="twitter:image" content="{e(social_image)}">
 <meta name="twitter:image:alt" content="{e(social_alt)}">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-<link rel="stylesheet" href="/assets/fonts.css">
-<link rel="stylesheet" href="/assets/styles.css">
+<style>{font_css}\n{shared_css}</style>
 <script src="/assets/app.js" defer></script>
 {schema_tag}
 </head>
@@ -192,7 +195,7 @@ def page(title, description, body, path='/', current=''):
     # Keep links portable under the GitHub project path and a future domain.
     depth = len([part for part in path.strip('/').split('/') if part])
     prefix = '../' * depth or './'
-    html = re.sub(r'''((?:href|src|action)=["'])/(?!/)''',
+    html = re.sub(r'''((?:href|src|srcset|action)=["'])/(?!/)''',
                   lambda match: match.group(1) + prefix, html)
     target = OUT / path.lstrip('/') / 'index.html'
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -206,7 +209,7 @@ def home():
     worlds=''
     for n,g,item,crop,desc in [(1,'travel',airport,[355,58,360,268],'Arrive well. Move effortlessly. Make the most of your time.'),(2,'living',lifestyle,[322,65,323,241],'From everyday details to a whole new beginning in Kenya.'),(3,'support',construction,[356,58,291,217],'A trusted pair of hands for your property, projects, and priorities.')]:
         worlds+=f'<a class="world-card" href="/services/?category={g}"><div class="world-visual">{photo(item,crop=crop)}<span class="world-number">0{n}</span><span class="world-arrow">{DIAGONAL}</span></div><h3>{GROUPS[g]}</h3><p>{desc}</p><span class="text-link">Explore services {ARROW}</span></a>'
-    body=f'''<section class="hero" aria-labelledby="hero-title"><img class="hero-image" src="/assets/kenya-savannah.webp" alt="An acacia tree above a sunlit Kenyan savannah — illustrative landscape" fetchpriority="high" width="1942" height="809"><div class="hero-shade"></div><div class="wrap hero-content"><span class="eyebrow">YOUR PEOPLE ON THE GROUND IN KENYA</span><h1 id="hero-title">Kenya, with<br><em>peace of mind.</em></h1><p>From your first welcome to the details back home.<br>Private concierge, thoughtfully tailored to you.</p><div class="hero-actions"><a class="button button-light" href="/services/">Discover our services {DIAGONAL}</a><a class="hero-text-link" href="/contact/">Speak to a concierge {ARROW}</a></div></div><div class="wrap hero-bottom"><span>PRIVATE. LOCAL. RELIABLE.</span><a href="#welcome">A warmer welcome awaits <span>↓</span></a><span>KENYA TRAVEL CONCIERGE</span></div></section>
+    body=f'''<section class="hero" aria-labelledby="hero-title"><picture><source type="image/avif" srcset="/assets/kenya-savannah.avif"><img class="hero-image" src="/assets/kenya-savannah.webp" alt="An acacia tree above a sunlit Kenyan savannah — illustrative landscape" fetchpriority="high" width="1942" height="809"></picture><div class="hero-shade"></div><div class="wrap hero-content"><span class="eyebrow">YOUR PEOPLE ON THE GROUND IN KENYA</span><h1 id="hero-title">Kenya, with<br><em>peace of mind.</em></h1><p>From your first welcome to the details back home.<br>Private concierge, thoughtfully tailored to you.</p><div class="hero-actions"><a class="button button-light" href="/services/">Discover our services {DIAGONAL}</a><a class="hero-text-link" href="/contact/">Speak to a concierge {ARROW}</a></div></div><div class="wrap hero-bottom"><span>PRIVATE. LOCAL. RELIABLE.</span><a href="#welcome">A warmer welcome awaits <span>↓</span></a><span>KENYA TRAVEL CONCIERGE</span></div></section>
     <section class="intro-section section" id="welcome"><div class="wrap intro-layout"><div><span class="eyebrow">THE LUXURY OF HAVING IT HANDLED</span><h2>More time to enjoy.<br><em>Less to arrange.</em></h2></div><div class="intro-copy"><p>Whether you’re visiting Kenya, coming home, settling in, or looking after an investment from afar, having someone you trust makes all the difference.</p><p>We are Kenya Travel Concierge: your discreet local link for travel, everyday life, and the things that need a little more attention. One conversation. A service shaped around you.</p><a class="text-link" href="#about">Get to know KTC {ARROW}</a></div></div></section>
     <section class="worlds-section section"><div class="wrap"><div class="section-heading"><div><span class="eyebrow">A WORLD OF POSSIBILITIES</span><h2>How can we<br><em>take care of you?</em></h2></div><a class="text-link" href="/services/">View all ten services {ARROW}</a></div><div class="worlds-grid">{worlds}</div></div></section>
     <section class="find-section section" aria-labelledby="find-title"><div class="wrap find-layout"><div><span class="eyebrow">MAKE YOURSELF AT HOME</span><h2 id="find-title">Your plans.<br><em>Your kind of support.</em></h2><p>Start with what brings you here.<br>We’ll help with what comes next.</p></div><div class="finder"><div class="finder-tabs" role="tablist" aria-label="Find services for your plans"><button role="tab" id="tab-visit" aria-selected="true" aria-controls="panel-visit" tabindex="0">I’m visiting</button><button role="tab" id="tab-move" aria-selected="false" aria-controls="panel-move" tabindex="-1">I’m relocating</button><button role="tab" id="tab-away" aria-selected="false" aria-controls="panel-away" tabindex="-1">I’m abroad</button></div>
@@ -250,10 +253,11 @@ if __name__ == '__main__':
     # so its assets and navigation still resolve at any missing-page depth.
     missing_page = OUT/'404/index.html'
     base_path = urlsplit(ORIGIN).path.rstrip('/')
-    missing_html = re.sub(r'''((?:href|src|action)=["'])\.\./''',
+    missing_html = re.sub(r'''((?:href|src|srcset|action)=["'])\.\./''',
                           lambda match: match.group(1) + base_path + '/',
                           missing_page.read_text())
     missing_html = missing_html.replace(ORIGIN + '/404/', ORIGIN + '/404.html')
+    missing_html = missing_html.replace('url(../assets/', 'url(' + base_path + '/assets/')
     (OUT/'404.html').write_text(missing_html)
     paths=['/','/services/','/contact/','/privacy/']+[f'/services/{s["slug"]}/' for s in SERVICES]
     (OUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{ORIGIN}{p}</loc></url>' for p in paths)+'</urlset>')

@@ -1,10 +1,11 @@
 """Verify indexable pages, schema, canonical URLs, sitemap and optimized assets."""
 from pathlib import Path
 from html.parser import HTMLParser
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urljoin, unquote
 from xml.etree import ElementTree
 import json
 import os
+import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +24,9 @@ class Page(HTMLParser):
         self.schemas = []
         self.preloads = []
         self.images = []
+        self.sources = []
+        self.styles = []
+        self.in_style = False
         self.visible = []
         self.in_title = False
         self.in_schema = False
@@ -33,6 +37,10 @@ class Page(HTMLParser):
         a = dict(attrs)
         if tag == 'head':
             self.in_head = True
+        if tag == 'style':
+            self.in_style = True
+        if tag == 'source':
+            self.sources.append(a)
         if tag == 'title':
             self.in_title = True
         if tag == 'script':
@@ -50,6 +58,8 @@ class Page(HTMLParser):
     def handle_endtag(self, tag):
         if tag == 'head':
             self.in_head = False
+        if tag == 'style':
+            self.in_style = False
         if tag == 'title':
             self.in_title = False
         if tag == 'script':
@@ -59,6 +69,8 @@ class Page(HTMLParser):
     def handle_data(self, data):
         if self.in_title:
             self.title += data
+        if self.in_style:
+            self.styles.append(data)
         if self.in_schema:
             try:
                 self.schemas.append(json.loads(data))
@@ -79,6 +91,17 @@ def require(condition, message):
         ERRORS.append(message)
 
 
+
+def check_inline_assets(page, page_url):
+    base = urlsplit(ORIGIN).path.rstrip('/') + '/'
+    for resource in re.findall(r"""url\(\s*['"]?([^)'"]+)""", ''.join(page.styles)):
+        url = urlsplit(urljoin(page_url, resource))
+        if url.netloc != urlsplit(ORIGIN).netloc:
+            continue
+        require(url.path.startswith(base), 'Inline CSS escapes site base: ' + resource)
+        target = ROOT / unquote(url.path.removeprefix(base))
+        require(target.is_file(), 'Missing inline CSS resource: ' + str(target))
+
 paths = ['/', '/services/', '/contact/', '/privacy/'] + [
     '/services/' + item['slug'] + '/' for item in SERVICES
 ]
@@ -87,6 +110,7 @@ descriptions = set()
 for path in paths:
     page = read(ROOT / path.lstrip('/') / 'index.html')
     expected = ORIGIN + path
+    check_inline_assets(page, expected)
     require(page.canonical == expected, 'Wrong canonical: ' + path)
     require('noindex' not in page.metas.get('robots', ''), 'Indexing blocked: ' + path)
     require(page.title not in titles and page.title.strip(), 'Duplicate/empty title: ' + path)
@@ -107,7 +131,7 @@ for path in paths:
         require(hero.get('src', '').endswith('kenya-savannah.webp'), 'Hero not optimized')
         require(hero.get('fetchpriority') == 'high' and hero.get('loading') != 'lazy',
                 'Hero must load promptly')
-        require(any(p.get('href') == hero.get('src') and p.get('as') == 'image'
+        require(any(p.get('href') in {hero.get('src')} | {source.get('srcset') for source in page.sources} and p.get('as') == 'image'
                     for p in page.preloads), 'Hero preload does not match image')
     if path.startswith('/services/'):
         breadcrumbs = [node for node in graph if node.get('@type') == 'BreadcrumbList']
@@ -140,6 +164,7 @@ urls = [item.text for item in sitemap.findall('.//s:loc', namespace)]
 require(len(urls) == len(set(urls)) == len(paths), 'Sitemap count/duplicates')
 require(set(urls) == {ORIGIN + path for path in paths}, 'Sitemap and canonicals differ')
 require('noindex' in read(ROOT / '404.html').metas.get('robots', ''), '404 should not be indexed')
+check_inline_assets(read(ROOT / '404.html'), ORIGIN + '/missing/deep/path')
 for path in (ROOT / 'dist').rglob('*.html'):
     if path.name != '404.html' and path.parent.name != '404':
         require(read(path).canonical.startswith(ORIGIN + '/'),
@@ -150,6 +175,7 @@ require('.ttf' not in fonts and fonts.count('.woff2') == 9, 'Efficient font URLs
 for file in (ROOT / 'assets').glob('font-*.woff2'):
     require(file.read_bytes().startswith(b'wOF2'), 'Invalid WOFF2: ' + file.name)
 require(len(list((ROOT / 'assets').glob('font-*.woff2'))) == 9, 'Missing font file')
+require((ROOT / 'assets/kenya-savannah.avif').stat().st_size < 300_000, 'AVIF exceeds asset budget')
 hero = ROOT / 'assets/kenya-savannah.webp'
 require(hero.is_file() and hero.stat().st_size < 500_000, 'Hero exceeds asset budget')
 require((ROOT / '.nojekyll').is_file(), 'GitHub static publishing marker missing')

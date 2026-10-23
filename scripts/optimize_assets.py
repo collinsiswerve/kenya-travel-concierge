@@ -10,6 +10,7 @@ from fontTools.ttLib import TTFont
 ASSETS = Path(__file__).resolve().parents[1] / 'dist' / 'assets'
 with Image.open(ASSETS / 'kenya-savannah.png') as image:
     image.save(ASSETS / 'kenya-savannah.webp', format='WEBP', quality=88, method=6)
+    image.save(ASSETS / 'kenya-savannah.avif', format='AVIF', quality=62, speed=6)
 
 for source in sorted(ASSETS.glob('font-*.ttf')):
     font = TTFont(source)
@@ -21,4 +22,4 @@ for source in sorted(ASSETS.glob('font-*.ttf')):
             or font['hmtx'].metrics != compressed['hmtx'].metrics):
         raise RuntimeError('Font characters or metrics changed: ' + source.name)
 
-print('Updated WebP hero and WOFF2 fonts. Run python3 scripts/build.py next.')
+print('Updated AVIF/WebP hero and WOFF2 fonts. Run python3 scripts/build.py next.')

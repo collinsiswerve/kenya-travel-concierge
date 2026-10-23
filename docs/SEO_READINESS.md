@@ -16,17 +16,24 @@ https://collinsiswerve.github.io/kenya-travel-concierge/
 - The error page is marked noindex; published content pages remain indexable.
 - Category and enquiry query parameters keep the clean page URL as canonical.
 - The retained dist copy points to the same public canonical URLs. The sitemap lists the public root URLs.
-- A WebP hero with early loading priority, lazy loading for supporting service images, and WOFF2 versions of the same nine fonts.
+- An AVIF hero with WebP fallback and early loading priority, lazy loading for supporting service images, and WOFF2 versions of the same nine fonts.
 - Existing keyboard navigation, skip link, image alternatives, responsive CSS and deferred JavaScript retained.
 
 ### Measured asset sizes
 
 | Asset | Before | After | Reduction |
 | --- | ---: | ---: | ---: |
-| Homepage hero | 2,590,686 bytes (PNG) | 319,504 bytes (WebP) | 87.7% |
+| Homepage hero, preferred | 2,590,686 bytes (PNG) | 168,005 bytes (AVIF) | 93.5% |
+| Homepage hero, fallback | 2,590,686 bytes (PNG) | 319,504 bytes (WebP) | 87.7% |
 | All nine font files | 1,837,460 bytes (TTF) | 444,780 bytes (WOFF2) | 75.8% |
 
 These are asset byte reductions, not measured page-speed or ranking gains. A browser downloads the font weights it uses, not necessarily all nine. Font characters and horizontal metrics were compared after conversion. Original images and font files remain as editable sources; normal page loading references the optimized versions.
+
+## Independent mobile audit
+
+The first PageSpeed Insights run on 23 October 2026 reported SEO 100, Performance 83, Accessibility 97 and Best Practices 96. It used an emulated Moto G Power with slow 4G, and had no real-user field data. Its report is https://pagespeed.web.dev/analysis/https-collinsiswerve-github-io-kenya-travel-concierge/262511oxyp?form_factor=mobile.
+
+The follow-up implementation removes the two render-blocking stylesheet requests by embedding the small shared CSS and font declarations, adds the AVIF variant, darkens muted text for legibility, and preserves supporting images' natural proportions. Font URLs inside embedded styles are checked for nested routes and the missing-page fallback. GitHub Pages controls response cache headers, so cache-lifetime findings may remain on this host. Scores are lab observations rather than ranking or field-performance guarantees.
 
 ## Next: permanent domain
 
@@ -67,7 +74,7 @@ A Google Business Profile is appropriate only if the business meets Google's eli
 
 - Deployment and source checks establish technical readiness, not Google indexing or a ranking promise.
 - No Google Search Console property has been verified and no sitemap has been submitted from an account.
-- No PageSpeed Insights score, mobile Lighthouse score or field Core Web Vitals pass is claimed by this change.
+- The initial mobile lab result is recorded above. A field Core Web Vitals pass is not claimed; no field data was available in that run.
 - Run PageSpeed Insights on the public homepage and a service page after deployment. Treat lab measurements separately from real-user field data.
 - Review Search Console impressions, queries, clicks, indexed pages and mobile experience as data accumulates. Enquiry tracking can be added after its scope and privacy requirements are agreed; no analytics or marketing tags have been installed.
 - A search results position and indexing date cannot be guaranteed.
