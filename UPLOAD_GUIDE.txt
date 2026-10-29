@@ -1,80 +1,53 @@
-KENYA TRAVEL CONCIERGE — GITHUB PAGES UPLOAD GUIDE
-Updated 23 October 2026
+KENYA TRAVEL CONCIERGE — PUBLISHING NOTES
+Updated 29 October 2026
 
-This ZIP contains the complete website, corrected for your existing repository:
+Repository:
 https://github.com/collinsiswerve/kenya-travel-concierge
 
-The homepage is now at the top level. Page links, images and fonts are prepared
-for the GitHub Pages project address. The design and service content are retained.
-
-1. EXTRACT THE ZIP
-Right-click the downloaded ZIP in Windows File Explorer and choose Extract All.
-Open the extracted folder. It should contain index.html, assets, services,
-contact, privacy, README.md, and the editable project folders.
-
-2. UPLOAD THE EXTRACTED CONTENTS
-Open your repository, choose Code, then Add file > Upload files.
-Select contents INSIDE the extracted folder and drag them into GitHub.
-For a full current repository export, use the two batches described below.
-Keep the folder structure. Upload the contents, not the ZIP and not its outer
-folder. Wait for all files to finish uploading.
-
-You can upload these files over the existing project. Matching files will be
-replaced; the previous dist and source folders can stay.
-GitHub accepts up to 100 files per browser upload batch. For the complete
-current repository, upload public files first: index.html, 404.html, assets,
-services, contact, privacy, robots.txt, sitemap.xml and .nojekyll. In a second
-batch upload the retained dist, data, docs and scripts folders, README.md,
-package.json, this guide and the original metadata files. The earlier
-100-file upload ZIP was a snapshot before the SEO asset additions.
-
-3. COMMIT
-Enter a message such as: Prepare website for GitHub Pages
-Choose Commit directly to the main branch, then Commit changes.
-On the repository's Code page, confirm index.html appears at the top level
-beside README.md. If index.html is inside another added folder, move the
-contents to the top level before continuing.
-
-4. SET GITHUB PAGES
-Open Settings > Pages.
-Under Build and deployment, use these exact settings:
-
-Source:  Deploy from a branch
-Branch:  main
-Folder:  /(root)
-
-Click Save if the settings changed. If Save is greyed out and the settings
-already match, they are already saved.
-Leave Custom domain blank for the standard GitHub Pages address.
-This package uses branch publishing; the separate deploy-pages.yml file from
-the earlier instructions is not required.
-
-5. OPEN THE WEBSITE
-Open the Actions tab to see the Pages deployment finish successfully.
-Return to Settings > Pages and click Visit site.
-Publishing can take up to 10 minutes after the commit.
-
-Your website address after deployment:
+Website:
 https://collinsiswerve.github.io/kenya-travel-concierge/
 
-If the page still shows an older version, refresh with Ctrl+F5.
-If the build fails, open the failed run in Actions to read the error message.
+UPDATING THE SITE
+Edit the source files listed in README.md, then rebuild and check:
 
-WHAT THE MAIN ITEMS ARE
-index.html        The homepage GitHub Pages opens.
-assets/           Website images, fonts, stylesheets and JavaScript.
-services/         Service catalogue and ten service detail pages.
-contact/          Enquiry page.
-privacy/          Privacy information.
-404.html          Missing-page fallback.
-.nojekyll         Tells GitHub Pages to publish the files as a static website.
-dist/             Retained built copy and source assets for future edits.
-data/             Editable service descriptions.
-scripts/          Build and validation scripts for future edits.
-docs/             Existing homepage preview.
-README.md         Project and editing information.
+python3 scripts/build.py
+python3 scripts/check.py
+python3 scripts/check_seo.py
+node --check assets/app.js
 
-No installation or terminal commands are needed for the upload steps above.
+Commit the updated source files, public files and matching dist copy to main.
+GitHub Pages publishes the top-level index.html and its neighbouring folders.
+If uploading files through GitHub, keep their paths and upload the contents of
+this repository, rather than a ZIP or an extra outer folder. GitHub limits
+browser uploads to 100 files per batch, so larger updates need several batches.
 
-The enquiry form prepares a WhatsApp or email message for the visitor to
-review and send; it does not store enquiries in a website database.
+PAGES SETTINGS
+Settings > Pages > Build and deployment:
+
+Source: Deploy from a branch
+Branch: main
+Folder: /(root)
+
+The .nojekyll file keeps the site as static HTML. No custom build workflow is
+needed. Leave the custom domain empty while using the github.io address.
+
+CHECKING THE DEPLOYMENT
+The Actions tab shows the pages build and deployment status. Wait for success,
+then visit the website. Publishing may take several minutes. If an old page
+remains visible, refresh it with Ctrl+F5. A failed run has details in its logs.
+
+MAIN FILES AND FOLDERS
+index.html    Homepage.
+assets/       Images, fonts, styles and JavaScript.
+services/     Service catalogue and ten service pages.
+contact/      WhatsApp and email enquiry form.
+privacy/      Privacy Policy.
+terms/        Terms & Conditions.
+404.html      Missing-page fallback.
+dist/         Matching built copy, including editable styles and JavaScript.
+data/         Service content, business details, social links and legal text.
+scripts/      Build and checking scripts.
+docs/         Image notes, preview and search visibility notes.
+
+The website does not store enquiries or take payments online. Visitors review
+and send their own prepared message using WhatsApp or their email app.

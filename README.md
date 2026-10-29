@@ -1,69 +1,67 @@
 # Kenya Travel Concierge
 
-A premium, responsive static website for Kenya Travel Concierge. Built with HTML, CSS, and vanilla JavaScript; no runtime framework or database required.
+I use this repository to manage the Kenya Travel Concierge website. It is where people can find out what we offer, get in touch and arrange support in Kenya, whether they are visiting, relocating or handling things from abroad.
 
-![KTC homepage preview](docs/website-preview.jpg)
+**[Visit the website](https://collinsiswerve.github.io/kenya-travel-concierge/)**
 
-## Website
+![Kenya Travel Concierge homepage](docs/website-preview.jpg)
 
-- Homepage with original Kenyan landscape imagery and the supplied KTC identity.
-- Service catalogue with three category filters and ten dedicated service pages.
-- Visitor journeys for guests, people relocating, and Kenyans abroad.
-- WhatsApp and email enquiry preparation, including service selection and browser validation.
-- Mobile navigation, keyboard-accessible tabs, FAQ disclosures, reduced-motion support, metadata, sitemap, and privacy information.
+## What is on the site
 
-## Run and edit
+The site covers our ten services, from airport welcomes and chauffeur arrangements to relocation, property care and everyday errands. Each service has its own page with a short explanation and a way to enquire.
 
-The ready-to-upload website starts at `index.html` in this folder. A parallel built copy remains in `dist/`. Serve the project folder to preview it. For example:
+Visitors can prepare a WhatsApp or email message on the contact page. They review and send it themselves; the website does not store enquiries in a database or take payments online.
 
-```sh
-python3 -m http.server 8080
-```
+Our [Privacy Policy](https://collinsiswerve.github.io/kenya-travel-concierge/privacy/) and [Terms & Conditions](https://collinsiswerve.github.io/kenya-travel-concierge/terms/) are linked at the bottom of every page.
 
-Edit service descriptions and inclusions in `data/services.json`. Shared page templates and general copy are in `scripts/build.py`; styles and interactions are in `dist/assets/styles.css` and `dist/assets/app.js`. Rebuilding also copies the updated website and assets to the project root for GitHub Pages.
+## Find us online
 
-Regenerate the HTML and check links:
+- [Instagram](https://www.instagram.com/kenyatravelconcierge/)
+- [TikTok](https://www.tiktok.com/@kenyatravelconcie)
+- [Facebook](https://www.facebook.com/share/1DoAB8zH6i/)
+
+For enquiries, call **+254 717 762323** or email **info.kenyatravelconcierge@gmail.com**.
+
+## Making changes
+
+The site uses HTML, CSS and JavaScript, with a small Python script to keep the shared parts of the pages consistent. There is no framework or database to set up.
+
+I keep the editable content in these files:
+
+| What needs changing | Where to edit |
+| --- | --- |
+| Service descriptions and inclusions | `data/services.json` |
+| Business metadata, social links and website address | `data/site.json` |
+| Privacy policy and terms | `data/legal.json` |
+| Shared layout, displayed contact details and general page copy | `scripts/build.py` |
+| Colours, spacing and responsive styles | `dist/assets/styles.css` |
+| Menus, service filters and enquiry form behaviour | `dist/assets/app.js` |
+
+After editing, rebuild the pages and run the checks:
 
 ```sh
 python3 scripts/build.py
 python3 scripts/check.py
 python3 scripts/check_seo.py
-node --check dist/assets/app.js
+node --check assets/app.js
 ```
 
-Python 3.10+ is needed only for regeneration. Node is used only for the optional JavaScript syntax check. The published site needs neither.
+The build updates both `dist/` and the public files at the top of the repository. Include both copies when committing a change so the next rebuild keeps the website in sync. Python 3.10 or newer is needed for rebuilding; Node is only needed for the JavaScript check.
 
-## Hosting on GitHub Pages
+To preview the site locally, run this from the repository folder and open `http://localhost:8080/`:
 
-This export is prepared for `collinsiswerve/kenya-travel-concierge`.
+```sh
+python3 -m http.server 8080
+```
 
-1. Extract the ZIP and upload all extracted files and folders directly into the repository on `main`. The repository must show `index.html` next to `README.md`, not inside an extra outer folder.
-2. Open **Settings > Pages**.
-3. Set **Source: Deploy from a branch**, **Branch: main**, and **Folder: /(root)**. Save if the settings changed.
-4. After the Pages deployment succeeds, open **Visit site** or `https://collinsiswerve.github.io/kenya-travel-concierge/`.
+## Publishing
 
-See `UPLOAD_GUIDE.txt` for the complete browser upload steps. No custom Actions workflow or build command is required on GitHub. The included `.nojekyll` file selects static publishing. Navigation, stylesheets and font URLs support the GitHub project address; canonical and sitemap URLs use that address as well.
+GitHub Pages publishes the files from **main → /(root)**. The homepage is the top-level `index.html`, and `.nojekyll` keeps publishing straightforward. After a change is committed to `main`, the deployment status appears in the repository’s **Actions** tab.
 
-If publishing at a different URL, set `SITE_URL` to its complete public base URL when rebuilding. The `404.html` navigation uses this base URL so it also works at missing nested routes.
+If the website address changes, update `data/site.json` and rebuild so the sitemap and page addresses match. More publishing notes are in [UPLOAD_GUIDE.txt](UPLOAD_GUIDE.txt).
 
-The `.openai/hosting.json` file retains the original connected Sites project identity and still points to `dist/`. Preserve it when updating that Site. GitHub Pages serves the ready copy at the repository root.
+## Images and fonts
 
-## Search visibility and performance
+The image sources and their notes are kept in `data/` and [docs/IMAGERY.md](docs/IMAGERY.md). The images are brand illustrations, rather than photographs documenting our actual team, clients or bookings. Public pages use smaller AVIF and WebP versions to keep loading times down.
 
-See [SEO readiness and launch plan](docs/SEO_READINESS.md) for implemented checks and the remaining Google account steps. Business details, the canonical base URL and an optional Search Console verification value are in `data/site.json`. The hero and service imagery use optimized AVIF with responsive WebP fallbacks and all active font URLs use WOFF2; the source assets and licences are retained. `scripts/optimize_assets.py --images-only` regenerates the optimized imagery using Pillow; omit the flag to also regenerate WOFF2 fonts using fonttools and brotli. HTML rebuilding and hosting require no extra packages.
-
-## Enquiries
-
-The form prepares a message locally and opens WhatsApp or the visitor's email app. It does not silently send messages or store requests in a site database. Visitors review and send their message themselves. Phone: +254 717 762323. Email: info.kenyatravelconcierge@gmail.com.
-
-## Assets
-
-The supplied KTC logo is retained. Twelve original photorealistic AI-generated brand images now cover the homepage hero, About section and all ten services. They are illustrative scenes, not photographs of actual KTC staff, clients, properties, vehicles or named venues. Tully Luxury Travel informed the photographic direction; none of its imagery was copied.
-
-High-quality JPEG masters are in `data/image-masters/`. The full generation prompts, built-in tool provenance, descriptive alternatives and image dimensions are retained in `data/imagery-prompts.json` and `data/imagery.json`. See [imagery notes](docs/IMAGERY.md) for the asset map. Public pages load AVIF with responsive WebP fallbacks from `assets/images/`, mirrored in `dist/assets/images/`. Original supplied screenshots and the earlier savannah illustration remain as historical source material and are not used for service imagery.
-
-Cormorant Garamond and Manrope are self-hosted Google Fonts. Their SIL Open Font License notices are included in `dist/assets/`. The reference website informed the spacious editorial presentation; its code, photographs, copy, awards, and testimonials have not been copied.
-
-## Ownership
-
-Brand content and supplied imagery remain subject to their respective owners' rights. This repository is intended for Kenya Travel Concierge's website. No broad open-source licence is asserted over the brand or supplied images.
+The site uses Cormorant Garamond and Manrope. Their font licences are included with the assets. KTC branding and other content remain subject to their respective owners’ rights; this repository does not grant a general licence to reuse them.

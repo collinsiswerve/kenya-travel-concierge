@@ -6,8 +6,10 @@
   "email": "info.kenyatravelconcierge@gmail.com",
   "language": "en",
   "country": "Kenya",
-  "same_as": [
-    "https://www.instagram.com/kenyatravelconcierge/"
-  ],
+  "social_links": {
+    "Instagram": "https://www.instagram.com/kenyatravelconcierge/",
+    "TikTok": "https://www.tiktok.com/@kenyatravelconcie",
+    "Facebook": "https://www.facebook.com/share/1DoAB8zH6i/"
+  },
   "google_site_verification": ""
 }

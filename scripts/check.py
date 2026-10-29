@@ -96,7 +96,7 @@ def inspect(site):
             ERRORS.append('Missing service page: ' + str(file.relative_to(ROOT)))
         elif 'service=' + service['slug'] not in file.read_text(encoding='utf-8'):
             ERRORS.append('Enquiry selection missing: ' + service['slug'])
-    expected = 15 if site == ROOT else 16
+    expected = len(SERVICES) + (6 if site == ROOT else 7)
     if len(documents) != expected:
         ERRORS.append('Unexpected HTML page count in ' + str(site))
     return len(documents), checked
@@ -106,7 +106,7 @@ results = [inspect(ROOT), inspect(ROOT / 'dist')]
 if ERRORS:
     print('\n'.join(sorted(set(ERRORS))))
     sys.exit(1)
-print('PASS: root contains all 14 content pages and 404.html; dist retains its 404 route; '
+print('PASS: root contains all 15 content pages and 404.html; dist retains its 404 route; '
       + str(sum(links for _, links in results))
       + ' local links, assets and anchors; fonts; all ten services; metadata and enquiry links.')
 

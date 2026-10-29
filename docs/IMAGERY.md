@@ -4,7 +4,7 @@ Updated 23 October 2026. The existing page layout, typography, logo, service cop
 
 ## Direction and provenance
 
-Twelve original images were created using OpenAI's built-in image-generation tool, one standalone asset per prompt. The direction is natural-light luxury editorial photography in Kenya-inspired settings: discreet service, lush greenery, linen, timber and natural stone. These AI-generated illustrations do not document actual KTC staff, clients, vehicles, venues or properties. No Tully photographs, code, copy, awards or endorsements were reused.
+The site uses twelve original AI-generated brand illustrations, with one image for each brief. The visual direction is natural-light editorial photography in Kenya-inspired settings: discreet service, greenery, linen, timber and natural stone. These illustrations do not document actual KTC staff, clients, vehicles, venues or properties. No Tully photographs, code, copy, awards or endorsements were reused.
 
 The complete prompt set is saved in [data/imagery-prompts.json](../data/imagery-prompts.json). Image alternatives, source dimensions, focal positions and output sizes are in [data/imagery.json](../data/imagery.json). Masters are high-quality JPEG exports from the generated originals. The older supplied screenshots and savannah source are retained for history.
 

@@ -12,6 +12,7 @@ OUT = ROOT / 'dist'
 SERVICES = json.loads((ROOT / 'data/services.json').read_text(encoding='utf-8'))
 SITE = json.loads((ROOT / 'data/site.json').read_text(encoding='utf-8'))
 IMAGERY = json.loads((ROOT / 'data/imagery.json').read_text(encoding='utf-8'))['images']
+LEGAL = json.loads((ROOT / 'data/legal.json').read_text(encoding='utf-8'))
 ORIGIN = os.getenv('SITE_URL', SITE['url']).rstrip('/')
 GROUPS = {'travel': 'Travel & Arrivals', 'living': 'Life & Relocation', 'support': 'Your Local Presence'}
 PHONE = '+254 717 762323'
@@ -60,11 +61,15 @@ def header(current=''):
     </div><nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation" hidden><a href="/services/">Our services</a><a href="/#approach">Our approach</a><a href="/#about">About KTC</a><a href="/contact/">Make an enquiry</a><a href="tel:+254717762323">{PHONE}</a></nav></header>'''
 
 def footer():
+    socials = ''.join(
+        f'<a href="{e(url)}" target="_blank" rel="noopener noreferrer">{e(name)} {DIAGONAL}</a>'
+        for name, url in SITE['social_links'].items()
+    )
     return f'''<footer class="site-footer"><div class="wrap footer-top"><div class="footer-brand">{brand()}<p>Your trusted presence in Kenya.<br>The details, beautifully handled.</p><p class="footer-motto">PRIVATE. LOCAL. RELIABLE.</p></div>
       <div><h3>Explore</h3><a href="/services/">Our services</a><a href="/#approach">Our approach</a><a href="/#about">About KTC</a><a href="/contact/">Get in touch</a></div>
       <div><h3>Let’s talk</h3><a href="tel:+254717762323">{PHONE}</a><a class="footer-email" href="mailto:{EMAIL}">{EMAIL}</a><a href="{WA}" target="_blank" rel="noopener noreferrer">WhatsApp {DIAGONAL}</a><span class="footer-availability">24-hour concierge enquiries</span></div>
-      <div><h3>Stay connected</h3><a href="https://www.instagram.com/kenyatravelconcierge/" target="_blank" rel="noopener noreferrer">Instagram {DIAGONAL}</a><p>Based in Kenya.<br>Here for you, wherever you are.</p></div></div>
-      <div class="wrap footer-bottom"><span>© 2026 Kenya Travel Concierge. All rights reserved.</span><a href="/privacy/">Privacy & enquiries</a><a href="#top">Back to top ↑</a></div></footer>
+      <div><h3>Stay connected</h3>{socials}<p>Based in Kenya.<br>Here for you, wherever you are.</p></div></div>
+      <div class="wrap footer-bottom"><span>© 2026 Kenya Travel Concierge. All rights reserved.</span><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms &amp; Conditions</a><a href="#top">Back to top ↑</a></div></footer>
       <a class="floating-whatsapp" href="{WA}?text=Hello%20KTC%2C%20I%27d%20like%20to%20make%20an%20enquiry." target="_blank" rel="noopener noreferrer" aria-label="Chat with Kenya Travel Concierge on WhatsApp"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-12 7L3 20l1.5-5a8 8 0 1 1 15.5-3.5Z"/><path d="M8 7.5c-1 3 2 6.5 5.5 7.5l2-1.5-2-1.5-1 1c-1.6-.7-2.8-1.9-3.5-3.5l1-1-1.5-2Z"/></svg><span>Let’s talk</span></a>'''
 
 def cta():
@@ -91,7 +96,7 @@ def structured_data(title, description, path):
                 'name': SITE['name'], 'url': ORIGIN + '/',
                 'description': SITE['description'],
                 'telephone': SITE['telephone'], 'email': SITE['email'],
-                'sameAs': SITE['same_as'],
+                'sameAs': list(SITE['social_links'].values()),
                 'areaServed': {'@type': 'Country', 'name': SITE['country']},
                 'contactPoint': {
                     '@type': 'ContactPoint', 'telephone': SITE['telephone'],
@@ -262,15 +267,29 @@ def detail(s):
 def contact():
     opts=''.join(f'<option value="{s["slug"]}">{e(s["title"])}</option>' for s in SERVICES)
     body=f'''<section class="contact-section wrap"><div class="contact-copy"><span class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</span><h1>Let’s make it<br><em>feel effortless.</em></h1><p>A few details are all we need to begin.<br>Tell us what you have in mind, and we’ll take it from there.</p><div class="contact-methods"><a href="tel:+254717762323"><span>CALL US</span><strong>{PHONE}</strong>{DIAGONAL}</a><a href="{WA}" target="_blank" rel="noopener noreferrer"><span>MESSAGE US</span><strong>Chat on WhatsApp</strong>{DIAGONAL}</a><a href="mailto:{EMAIL}"><span>EMAIL US</span><strong class="contact-email">{EMAIL}</strong>{DIAGONAL}</a></div><p class="contact-availability">Private. Local. Reliable.<br><span>24-hour concierge enquiries · Support across Kenya</span></p></div>
-      <div class="enquiry-panel"><span class="eyebrow">MAKE AN ENQUIRY</span><h2>A service shaped<br><em>around you.</em></h2><form id="enquiry-form"><div class="form-grid"><div class="field"><label for="name">Your name <span>*</span></label><input id="name" name="name" autocomplete="name" placeholder="Full name" required maxlength="100"></div><div class="field"><label for="email">Email address <span>*</span></label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="200"></div><div class="field"><label for="phone">Phone number <span class="optional">(optional)</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="Include country code" maxlength="40"></div><div class="field"><label for="service">How can we help? <span>*</span></label><select id="service" name="service" required><option value="">Select a service</option>{opts}<option value="multiple">Several services / a bespoke request</option></select></div><div class="field field-full"><label for="timing">When do you need support? <span class="optional">(optional)</span></label><input id="timing" name="timing" placeholder="Your dates, or tell us if you’re flexible" maxlength="160"></div><div class="field field-full"><label for="message">Tell us a little more <span>*</span></label><textarea id="message" name="message" rows="4" placeholder="Your plans, location, and the details that matter to you…" required maxlength="3000"></textarea></div></div><button class="button button-green form-submit" type="submit">Continue on WhatsApp {DIAGONAL}</button><button class="email-enquiry" type="submit" name="channel" value="email">Prefer email? Prepare an email enquiry {ARROW}</button><p class="form-explanation">Your enquiry opens in WhatsApp or your email app for you to review and send. Please share only the details needed to plan your service. <a href="/privacy/">Privacy & enquiries</a></p><div id="enquiry-result" class="enquiry-result" role="status" aria-live="polite" hidden></div></form></div></section>'''
+      <div class="enquiry-panel"><span class="eyebrow">MAKE AN ENQUIRY</span><h2>A service shaped<br><em>around you.</em></h2><form id="enquiry-form"><div class="form-grid"><div class="field"><label for="name">Your name <span>*</span></label><input id="name" name="name" autocomplete="name" placeholder="Full name" required maxlength="100"></div><div class="field"><label for="email">Email address <span>*</span></label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="200"></div><div class="field"><label for="phone">Phone number <span class="optional">(optional)</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="Include country code" maxlength="40"></div><div class="field"><label for="service">How can we help? <span>*</span></label><select id="service" name="service" required><option value="">Select a service</option>{opts}<option value="multiple">Several services / a bespoke request</option></select></div><div class="field field-full"><label for="timing">When do you need support? <span class="optional">(optional)</span></label><input id="timing" name="timing" placeholder="Your dates, or tell us if you’re flexible" maxlength="160"></div><div class="field field-full"><label for="message">Tell us a little more <span>*</span></label><textarea id="message" name="message" rows="4" placeholder="Your plans, location, and the details that matter to you…" required maxlength="3000"></textarea></div></div><button class="button button-green form-submit" type="submit">Continue on WhatsApp {DIAGONAL}</button><button class="email-enquiry" type="submit" name="channel" value="email">Prefer email? Prepare an email enquiry {ARROW}</button><p class="form-explanation">Your enquiry opens in WhatsApp or your email app for you to review and send. Please share only the details needed to plan your service. <a href="/privacy/">Privacy Policy</a> · <a href="/terms/">Terms &amp; Conditions</a>. Sending an enquiry does not confirm a booking.</p><div id="enquiry-result" class="enquiry-result" role="status" aria-live="polite" hidden></div></form></div></section>'''
     page('Contact Your Concierge', 'Speak to Kenya Travel Concierge. Call +254 717 762323, message on WhatsApp, or prepare a personalised enquiry.', body, '/contact/')
 
-def privacy():
-    body=f'''<section class="text-page wrap"><span class="eyebrow">PRIVACY & ENQUIRIES</span><h1>A little clarity.<br><em>Before you connect.</em></h1><div class="prose"><h2>Making an enquiry</h2><p>The website enquiry form prepares a message on your device. It does not submit your details to a KTC website database. You choose whether to send your prepared message through WhatsApp or your email application.</p><h2>The details you share</h2><p>We ask for your name, email, preferred service, and a short description so we can understand your request. Your phone number and timing are optional. Please do not include passport numbers, payment card details, passwords, or other sensitive documents in an initial enquiry.</p><h2>External services</h2><p>Links to WhatsApp and Instagram open services operated by their respective providers, which apply their own privacy practices. The website uses no advertising pixels, marketing cookies, or enquiry analytics scripts. Hosting services may process technical information needed to serve the website.</p><h2>Following up with KTC</h2><p>When you send a message, KTC uses the information you provide to discuss and coordinate your requested services. Any further documents, third-party arrangements, or authorisations should be agreed directly with your concierge.</p><h2>Contact</h2><p>For questions about an enquiry or the information you have shared, contact <a href="mailto:{EMAIL}">{EMAIL}</a> or call <a href="tel:+254717762323">{PHONE}</a>.</p><a class="text-link" href="/contact/">Back to your enquiry {ARROW}</a></div></section>'''
-    page('Privacy & Enquiries', 'How the KTC website enquiry form works, the information you choose to share, and how to contact your concierge.', body, '/privacy/')
+def legal_page(slug):
+    content = LEGAL['pages'][slug]
+    sections = ''.join(
+        '<section><h2>' + e(section['heading']) + '</h2>'
+        + ''.join('<p>' + paragraph + '</p>' for paragraph in section['paragraphs'])
+        + '</section>' for section in content['sections']
+    )
+    body = f'''<section class="text-page legal-page wrap">
+      <a class="breadcrumb" href="/">Home / {e(content['title'])}</a>
+      <span class="eyebrow">{e(content['eyebrow'])}</span>
+      <h1>{e(content['title'])}</h1>
+      <p class="legal-meta">Last updated <time datetime="{e(LEGAL['updated_iso'])}">{e(LEGAL['updated'])}</time></p>
+      <p class="legal-intro">{e(content['intro'])}</p>
+      <nav class="legal-nav" aria-label="Legal information"><a href="/privacy/"{' aria-current="page"' if slug == 'privacy' else ''}>Privacy Policy</a><a href="/terms/"{' aria-current="page"' if slug == 'terms' else ''}>Terms &amp; Conditions</a><a href="/contact/">Contact KTC</a></nav>
+      <div class="prose">{sections}<a class="text-link" href="/contact/">Talk to your concierge {ARROW}</a></div>
+    </section>'''
+    page(content['title'], content['description'], body, '/' + slug + '/')
 
 if __name__ == '__main__':
-    home(); catalogue(); contact(); privacy()
+    home(); catalogue(); contact(); legal_page('privacy'); legal_page('terms')
     for s in SERVICES: detail(s)
     page('Page Not Found', 'Find your way back to Kenya Travel Concierge.', '<section class="page-intro wrap"><span class="eyebrow">A SMALL DETOUR</span><h1>Let’s get you<br><em>back on your way.</em></h1><p>The page you are looking for could not be found.</p><a class="button button-green" href="/">Back to KTC '+ARROW+'</a></section>', '/404/')
     # GitHub serves 404.html at arbitrary missing URLs; use the public base path
@@ -283,11 +302,10 @@ if __name__ == '__main__':
     missing_html = missing_html.replace(ORIGIN + '/404/', ORIGIN + '/404.html')
     missing_html = missing_html.replace('url(../assets/', 'url(' + base_path + '/assets/')
     (OUT/'404.html').write_text(missing_html)
-    paths=['/','/services/','/contact/','/privacy/']+[f'/services/{s["slug"]}/' for s in SERVICES]
+    paths=['/','/services/','/contact/','/privacy/','/terms/']+[f'/services/{s["slug"]}/' for s in SERVICES]
     (OUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{ORIGIN}{p}</loc></url>' for p in paths)+'</urlset>')
     (OUT/'robots.txt').write_text(f'User-agent: *\nAllow: /\nSitemap: {ORIGIN}/sitemap.xml\n')
-    # Publish a second ready-to-upload copy at the repository root. Keep dist
-    # and its original Sites metadata so the complete editable project survives.
+    # GitHub Pages serves the repository root; retain dist for local rebuilding.
     for source in OUT.rglob('*'):
         if source.is_file() and source.relative_to(OUT).as_posix() != '404/index.html':
             target = ROOT / source.relative_to(OUT)

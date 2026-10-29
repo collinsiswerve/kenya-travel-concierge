@@ -1,17 +1,17 @@
 # SEO readiness and launch plan
 
-Updated 23 October 2026 for Kenya Travel Concierge.
+Updated 29 October 2026 for Kenya Travel Concierge.
 
 The public site is already live at:
 https://collinsiswerve.github.io/kenya-travel-concierge/
 
 ## Implemented
 
-- Crawlable HTML for the homepage, services catalogue, ten service pages, contact and privacy.
-- Unique search titles and descriptions, absolute canonical URLs, and a matching 14-page XML sitemap.
+- Crawlable HTML for the homepage, services catalogue, ten service pages, contact, privacy policy and terms.
+- Unique search titles and descriptions, absolute canonical URLs, and a matching 15-page XML sitemap.
 - Service titles describe the service and Kenya; the visible page design and service content are retained.
 - Organization and WebSite structured data on the homepage; Service structured data on all ten service pages; breadcrumb data on service routes; a ContactPage for enquiries.
-- Markup uses the existing name, phone, email, Instagram and Kenya service coverage. No address, reviews, ratings, awards or prices have been invented.
+- Markup uses the existing name, phone, email, Instagram, TikTok, Facebook and Kenya service coverage. No address, reviews, ratings, awards or prices have been invented.
 - Complete Open Graph and social image metadata with descriptive image text.
 - The error page is marked noindex; published content pages remain indexable.
 - Category and enquiry query parameters keep the clean page URL as canonical.

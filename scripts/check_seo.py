@@ -103,7 +103,7 @@ def check_inline_assets(page, page_url):
         target = ROOT / unquote(url.path.removeprefix(base))
         require(target.is_file(), 'Missing inline CSS resource: ' + str(target))
 
-paths = ['/', '/services/', '/contact/', '/privacy/'] + [
+paths = ['/', '/services/', '/contact/', '/privacy/', '/terms/'] + [
     '/services/' + item['slug'] + '/' for item in SERVICES
 ]
 titles = set()
@@ -200,6 +200,6 @@ require((ROOT / '.nojekyll').is_file(), 'GitHub static publishing marker missing
 if ERRORS:
     print('\n'.join(ERRORS))
     sys.exit(1)
-print('PASS: 14 unique, indexable pages; matching sitemap/canonicals; Organization, '
+print('PASS: 15 unique, indexable pages; matching sitemap/canonicals; Organization, '
       'WebSite, Service and breadcrumb JSON-LD; social previews; error-page exclusion; '
       'twelve optimized responsive brand images and all nine WOFF2 fonts.')
